@@ -1,7 +1,8 @@
 #include "AudioLab.h"
 
-
-AudioLab::AudioLab() {}
+AudioLab::AudioLab() {
+  _initAudio();
+}
 
 AudioLab &AudioLab::getInstance() {
   static AudioLab instance;
@@ -19,7 +20,7 @@ void AudioLab::init() {
   adc1_config_width(ADC_WIDTH_12Bit);
   adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_11db);
 
-  _initAudio();
+  //_initAudio();
 
   _initISR();
 }
@@ -37,7 +38,7 @@ void AudioLab::flush() {
 }
 
 void AudioLab::synthesize() {
-  _setupWaves();
+  //_setupWaves();
 
   _generateAudio();
 }

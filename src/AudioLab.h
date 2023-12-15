@@ -32,15 +32,6 @@ class AudioLab
     void _calculate_waves();
     void _calculate_windowing_wave();
 
-    struct wave 
-    {
-      wave(): amp(0), freq(0), phase(0) {}
-      wave(int amp, int freq, int phase): freq(freq), amp(amp), phase(phase) {}
-      int freq;
-      int amp;
-      int phase;
-    };
-
     struct waveNode {
       waveNode() : wave_ref(NULL), prev(NULL), next(NULL) {}
 
@@ -49,29 +40,24 @@ class AudioLab
       waveNode* next;
     };
 
-    static waveNode* waveListHead;
+    static waveNode* waveListHead[NUM_OUT_CH];
     static uint8_t numWaveNodes;
-
-    waveNode* _getWaveList();
-
-    wave _waves[NUM_OUT_CH][MAX_NUM_WAVES];
-    uint8_t _num_waves[NUM_OUT_CH];
+    
+    void _initWaveList();
 
     static const int AUD_IN_BUFFER_SIZE = WINDOW_SIZE;
     static const int AUD_OUT_BUFFER_SIZE = WINDOW_SIZE * 2;
+    static const int GEN_AUD_BUFFER_SIZE = WINDOW_SIZE * 3;
 
-    float cos_wave_w[AUD_OUT_BUFFER_SIZE];
-    float sin_wave[SAMPLE_FREQ];
+    static float cos_wave_w[AUD_OUT_BUFFER_SIZE];
+    static float sin_wave[SAMPLE_FREQ];
 
     int sin_wave_idx = 0;
 
-    float _get_wave_val(wave w);
+    float _get_wave_val(Wave* w);
     float _get_sum_of_channel(uint8_t ch);
 
     void _generateAudio();
-
-    int generateAudioBufferIdx = 0;
-    int generateAudioOutBufferIdx = 0;
 
     volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
     volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
@@ -80,8 +66,7 @@ class AudioLab
     volatile static int AUD_IN_BUFFER_IDX;
     volatile static int AUD_OUT_BUFFER_POS;
 
-    static const int GEN_AUD_BUFFER_SIZE = WINDOW_SIZE * 3;
-    float generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
+    static float generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
 
     // timer object
     static hw_timer_t *SAMPLING_TIMER;

@@ -3,22 +3,14 @@
 const float _SAMPLE_FREQ = 1.0 / SAMPLE_FREQ;
 
 volatile int AudioLab::AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
+float AudioLab::generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
 
-// float cos_wave_w[AUD_OUT_BUFFER_SIZE];
-// float sin_wave[SAMPLE_FREQ];
-//int sin_wave_idx = 0;
+int generateAudioBufferIdx = 0;
+int generateAudioOutBufferIdx = 0;
 
-// struct wave 
-// {
-//   wave(int amp, int freq, int phase): freq(freq), amp(amp), phase(phase) {}
-//   wave(): amp(0), freq(0), phase(0) {}
-//   int freq;
-//   int amp;
-//   int phase;
-// };
 
-// wave waves[NUM_OUT_CH]*;
-// uint8_t num_waves[NUM_OUT_CH];
+float AudioLab::cos_wave_w[AUD_OUT_BUFFER_SIZE];
+float AudioLab::sin_wave[SAMPLE_FREQ];
 
 void AudioLab::_calculate_windowing_wave(void) {
   float resolution = float(2.0 * PI / AUD_OUT_BUFFER_SIZE);
@@ -40,39 +32,22 @@ void AudioLab::_calculate_waves(void) {
   }
 }
 
-void AudioLab::_setupWaves() {
-  for (int c = 0; c < NUM_OUT_CH; c++) {
-    for (int i = 0; i < MAX_NUM_WAVES; i++) {
-      _waves[c][i] = wave();
-    }
-    _num_waves[c] = 0;
-  }  
-
-  waveNode* currentNode = _getWaveList();
-  while (currentNode != NULL) {
-    Wave* wave = currentNode->wave_ref;
-    int ch = wave->getChannel();
-    int freq = wave->getFreq();
-    int amp = wave->getAmp();
-    int phase = wave->getPhase();
-
-    _waves[ch][_num_waves[ch]++] = AudioLab::wave(freq, amp, phase);
-
-    currentNode = currentNode->next;
-  }
-}
-
-float AudioLab::_get_wave_val(wave w) {
-  float sin_wave_freq_idx = (sin_wave_idx * w.freq + w.phase) * _SAMPLE_FREQ;
+float AudioLab::_get_wave_val(Wave* w) {
+  int amp = w->getAmp();
+  int freq = w->getFreq();
+  int phase = w->getPhase();
+  if (amp == 0 || (freq == 0 && phase == 0)) return 0.0;
+  float sin_wave_freq_idx = (sin_wave_idx * freq + phase) * _SAMPLE_FREQ;
   int sin_wave_position = (sin_wave_freq_idx - floor(sin_wave_freq_idx)) * SAMPLE_FREQ;
-  return w.amp * sin_wave[sin_wave_position];
+  return amp * sin_wave[sin_wave_position];
 }
 
 float AudioLab::_get_sum_of_channel(uint8_t ch) {
   float sum = 0.0;
-  for (int s = 0; s < _num_waves[ch]; s++) {
-    if (_waves[ch][s].amp == 0 || (_waves[ch][s].freq == 0 && _waves[ch][s].phase == 0)) continue;
-    sum += _get_wave_val(_waves[ch][s]);
+  waveNode* currentNode = waveListHead[ch];
+  while (currentNode != NULL) {
+    sum += _get_wave_val(currentNode->wave_ref);
+    currentNode = currentNode->next;
   }
   return sum;
 }

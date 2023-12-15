@@ -1,9 +1,13 @@
 #include "AudioLab.h"
 
-AudioLab::waveNode* AudioLab::waveListHead = NULL;
+AudioLab::waveNode* AudioLab::waveListHead[NUM_OUT_CH];
 uint8_t AudioLab::numWaveNodes = 0;
 
-AudioLab::waveNode* AudioLab::_getWaveList() { return waveListHead; }
+void AudioLab::_initWaveList() {
+  for (int i = 0; i < NUM_OUT_CH; i++) {
+    waveListHead[i] = NULL;
+  }
+}
 
 Wave AudioLab::createWave() {
   if (numWaveNodes == MAX_NUM_WAVES) {
@@ -16,6 +20,8 @@ Wave AudioLab::createWave() {
 void AudioLab::_pushWaveNode(Wave* thisWave) {
   if (thisWave == NULL) return;
 
+  int channel = thisWave->getChannel();
+
   numWaveNodes += 1;
 
   waveNode* newNode = (waveNode*)malloc(sizeof(waveNode));
@@ -23,13 +29,13 @@ void AudioLab::_pushWaveNode(Wave* thisWave) {
   newNode->prev = NULL;
   newNode->next = NULL;
 
-  if (waveListHead == NULL)
+  if (waveListHead[channel] == NULL)
   {
-    waveListHead = newNode;
+    waveListHead[channel] = newNode;
   } 
   else 
   {
-    waveNode* currentNode = waveListHead;
+    waveNode* currentNode = waveListHead[channel];
     waveNode* prevNode = NULL;
     
     while( currentNode != NULL ) {
@@ -47,14 +53,16 @@ void AudioLab::_pushWaveNode(Wave* thisWave) {
 void AudioLab::_removeWaveNode(Wave* thisWave) {
   if (thisWave == NULL) return;
 
+  int channel = thisWave->getChannel();
+
   numWaveNodes -= 1;
 
-  waveNode* currentNode = waveListHead;
+  waveNode* currentNode = waveListHead[channel];
 
   if (numWaveNodes == 0) 
   {
     free(currentNode);
-    waveListHead = NULL;
+    waveListHead[channel] = NULL;
   }
   else 
   {
@@ -65,8 +73,8 @@ void AudioLab::_removeWaveNode(Wave* thisWave) {
     waveNode* prevNode = currentNode->prev;
     waveNode* nextNode = currentNode->next;
 
-    if (currentNode == waveListHead) {
-      waveListHead = nextNode;
+    if (currentNode == waveListHead[channel]) {
+      waveListHead[channel] = nextNode;
       nextNode->prev = NULL;
     } else {
       if (prevNode != NULL) prevNode->next = nextNode;
