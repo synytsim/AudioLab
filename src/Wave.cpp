@@ -1,7 +1,7 @@
 #include "AudioLab.h"
 
 Wave::Wave() {
-  Audio._pushWaveNode(this);
+  AudioLab._pushWaveNode(this);
   _freq = 0;
   _amp = 0;
   _phase = 0;
@@ -30,6 +30,6 @@ Wave::Wave() {
 // }
 
 Wave::~Wave() {
-  Audio._removeWaveNode(this);
+  AudioLab._removeWaveNode(this);
   Serial.println("WAVE REMOVED");
 }

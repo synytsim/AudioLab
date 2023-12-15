@@ -1,8 +1,6 @@
 #ifndef Wave_h
 #define Wave_h
 
-#include "AudioLab.h"
-
 class Wave
 {
   public:

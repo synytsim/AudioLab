@@ -1,19 +1,19 @@
 #include "AudioLab.h"
 
-AudioLab::AudioLab() {
+AudioLab_::AudioLab_() {
   _initAudio();
 }
 
-AudioLab &AudioLab::getInstance() {
-  static AudioLab instance;
+AudioLab_ &AudioLab_::getInstance() {
+  static AudioLab_ instance;
   return instance;
 }
 
-//AudioLab &Audio = AudioLab.getInstance();
+//AudioLab_ &Audio = AudioLab_.getInstance();
 
-AudioLab &Audio = AudioLab::getInstance();
+AudioLab_ &AudioLab = AudioLab_::getInstance();
 
-void AudioLab::init() {
+void AudioLab_::init() {
 
   delay(3000);
   pinMode(AUD_OUT_PIN, OUTPUT);
@@ -25,19 +25,19 @@ void AudioLab::init() {
   _initISR();
 }
 
-void AudioLab::reset() {
+void AudioLab_::reset() {
   return;
 }
 
-bool AudioLab::ready() {
+bool AudioLab_::ready() {
   return AUD_IN_BUFFER_FULL();
 }
 
-void AudioLab::flush() {
-  RESET_AUD_IN_OUT_IDX();
+void AudioLab_::flush() {
+  SYNC_AUD_IN_OUT_IDX();
 }
 
-void AudioLab::synthesize() {
+void AudioLab_::synthesize() {
   //_setupWaves();
 
   _generateAudio();

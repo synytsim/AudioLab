@@ -1,2 +1,2 @@
 # AudioLab
-An Arduino library for audio sampling and synthesis
+An Arduino library for sampling and synthesizing signals

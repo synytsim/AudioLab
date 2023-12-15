@@ -2,16 +2,21 @@
 
 const int sampleDelayTime = 1000000 / SAMPLE_FREQ;
 
-hw_timer_t* AudioLab::SAMPLING_TIMER = NULL;
+hw_timer_t* SAMPLING_TIMER = NULL;
 
-volatile int AudioLab::AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
-volatile int AudioLab::AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
-float AudioLab::generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
+volatile int AudioLab_::AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
+volatile int AudioLab_::AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
+float AudioLab_::generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
 
-volatile int AudioLab::AUD_IN_BUFFER_IDX = 0;
-volatile int AudioLab::AUD_OUT_BUFFER_POS = 0;
+volatile int AUD_IN_BUFFER_IDX = 0;
+volatile int AUD_OUT_BUFFER_POS = 0;
 
-void IRAM_ATTR AudioLab::AUD_IN_OUT() {
+void AudioLab_::_resetAudInOut() {
+  AUD_IN_BUFFER_IDX = 0;
+  AUD_OUT_BUFFER_POS = 0;
+}
+
+void IRAM_ATTR AudioLab_::AUD_IN_OUT() {
   if (AUD_IN_BUFFER_FULL()) return;
 
   int AUD_OUT_BUFFER_IDX = AUD_OUT_BUFFER_POS + AUD_IN_BUFFER_IDX;
@@ -22,11 +27,11 @@ void IRAM_ATTR AudioLab::AUD_IN_OUT() {
   AUD_IN_BUFFER_IDX += 1;
 }
 
-bool IRAM_ATTR AudioLab::AUD_IN_BUFFER_FULL() {
+bool IRAM_ATTR AudioLab_::AUD_IN_BUFFER_FULL() {
   return !(AUD_IN_BUFFER_IDX < WINDOW_SIZE);
 }
 
-void AudioLab::RESET_AUD_IN_OUT_IDX() {
+void AudioLab_::SYNC_AUD_IN_OUT_IDX() {
   AUD_OUT_BUFFER_POS += AUD_IN_BUFFER_SIZE;
   if (AUD_OUT_BUFFER_POS >= AUD_OUT_BUFFER_SIZE) AUD_OUT_BUFFER_POS = 0;
   AUD_IN_BUFFER_IDX = 0;
@@ -35,9 +40,9 @@ void AudioLab::RESET_AUD_IN_OUT_IDX() {
 // #define DAC_MID 2048
 // #define ADC_MID 128
 
-void AudioLab::_initAudio() {
-  _calculate_windowing_wave();
-  _calculate_waves();
+void AudioLab_::_initAudio() {
+  _calculateWindowingWave();
+  _calculateWaves();
   _initWaveList();
   
   for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
@@ -51,13 +56,11 @@ void AudioLab::_initAudio() {
       }
     }
   }
-  // generateAudioBufferIdx = 0;
-  // generateAudioOutBufferIdx = 0;
-  AUD_IN_BUFFER_IDX = 0;
-  AUD_OUT_BUFFER_POS = 0;
+  _resetGenerateAudio();
+  _resetAudInOut();
 }
 
-void AudioLab::_initISR() {
+void AudioLab_::_initISR() {
     // setup timer interrupt for audio sampling
   SAMPLING_TIMER = timerBegin(0, 80, true);                       // setting clock prescaler 1MHz (80MHz / 80)
   timerAttachInterrupt(SAMPLING_TIMER, &AUD_IN_OUT, true); // attach interrupt function
@@ -65,7 +68,7 @@ void AudioLab::_initISR() {
   timerAlarmEnable(SAMPLING_TIMER);                               // enabled interrupt
 }
 
-void AudioLab::pullSamples(int* output) {
+void AudioLab_::pullSamples(int* output) {
     for (int i = 0; i < WINDOW_SIZE; i++) {
         output[i] = AUD_IN_BUFFER[i];
     }

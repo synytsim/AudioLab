@@ -1,31 +1,26 @@
 #include "AudioLab.h"
 
-AudioLab::waveNode* AudioLab::waveListHead[NUM_OUT_CH];
-uint8_t AudioLab::numWaveNodes = 0;
+AudioLab_::waveNode* AudioLab_::waveListHead[NUM_OUT_CH];
 
-void AudioLab::_initWaveList() {
+void AudioLab_::_initWaveList() {
   for (int i = 0; i < NUM_OUT_CH; i++) {
     waveListHead[i] = NULL;
   }
 }
 
-Wave AudioLab::createWave() {
-  if (numWaveNodes == MAX_NUM_WAVES) {
-    Serial.print("CANNOT ADD WAVE");
-  } else {
-    return Wave();
-  }
+Wave AudioLab_::createWave() {
+  return Wave();
 }
 
-void AudioLab::_pushWaveNode(Wave* thisWave) {
+void AudioLab_::_pushWaveNode(Wave* thisWave) {
   if (thisWave == NULL) return;
 
   int channel = thisWave->getChannel();
 
-  numWaveNodes += 1;
+  // numWaveNodes += 1;
 
   waveNode* newNode = (waveNode*)malloc(sizeof(waveNode));
-  newNode->wave_ref = thisWave;
+  newNode->waveRef = thisWave;
   newNode->prev = NULL;
   newNode->next = NULL;
 
@@ -50,23 +45,23 @@ void AudioLab::_pushWaveNode(Wave* thisWave) {
   }
 }
 
-void AudioLab::_removeWaveNode(Wave* thisWave) {
+void AudioLab_::_removeWaveNode(Wave* thisWave) {
   if (thisWave == NULL) return;
 
   int channel = thisWave->getChannel();
 
-  numWaveNodes -= 1;
+  // numWaveNodes -= 1;
 
   waveNode* currentNode = waveListHead[channel];
 
-  if (numWaveNodes == 0) 
+  if (currentNode->next == NULL) 
   {
     free(currentNode);
     waveListHead[channel] = NULL;
   }
   else 
   {
-    while( currentNode->wave_ref != thisWave ) {
+    while( currentNode->waveRef != thisWave ) {
       currentNode = currentNode->next;
     }
 
