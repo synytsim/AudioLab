@@ -11,22 +11,22 @@ class Wave
 
     ~Wave();  
 
-    void setFreq(int freq) { _freq = freq; }
-    void setAmp(int amp) { _amp = amp; }
-    void setPhase(int phase) { _phase = phase; }
-    void setChannel(int channel)  { _channel = channel; }
+    void setFrequency(int aFrequency);
+    void setAmplitude(int anAmplitude);
+    void setPhase(int aPhase);
+    void setChannel(int aChannel);
 
-    int getFreq() { return _freq; }
-    int getAmp() { return _amp; }
-    int getPhase() { return _phase; }
-    int getChannel() { return _channel; }
+    int getFrequency();
+    int getAmplitude();
+    int getPhase();
+    int getChannel();
 
   private:
 
-    int _freq;
-    int _amp;
-    int _phase;
-    int _channel;
+    int frequency;
+    int amplitude;
+    int phase;
+    int channel;
     
     // static void _pushWaveNode(Wave* thisWave);
     // static void _removeWaveNode(Wave* thisWave);

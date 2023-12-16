@@ -1,44 +1,50 @@
 #include "AudioLab.h"
 
-AudioLab_::AudioLab_() {
-  _initAudio();
+ClassAudioLab::ClassAudioLab() {
+  initAudio();
 }
 
-AudioLab_ &AudioLab_::getInstance() {
-  static AudioLab_ instance;
+ClassAudioLab &ClassAudioLab::getInstance() {
+  static ClassAudioLab instance;
   return instance;
 }
 
-//AudioLab_ &Audio = AudioLab_.getInstance();
+ClassAudioLab &AudioLab = ClassAudioLab::getInstance();
 
-AudioLab_ &AudioLab = AudioLab_::getInstance();
-
-void AudioLab_::init() {
+// initialize pins and interrupt timer, call once in setup()
+void ClassAudioLab::init() {
 
   delay(3000);
   pinMode(AUD_OUT_PIN, OUTPUT);
   adc1_config_width(ADC_WIDTH_12Bit);
   adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_11db);
 
-  //_initAudio();
-
-  _initISR();
+  initISR();
 }
 
-void AudioLab_::reset() {
+// reset AudioLab, may be useful in certain events
+void ClassAudioLab::reset() {
   return;
 }
 
-bool AudioLab_::ready() {
+// returns true when new waves can be synthesized
+bool ClassAudioLab::ready() {
   return AUD_IN_BUFFER_FULL();
 }
 
-void AudioLab_::flush() {
+// continue audio sampling, this should be called when ready() returns true
+void ClassAudioLab::flush() {
   SYNC_AUD_IN_OUT_IDX();
 }
 
-void AudioLab_::synthesize() {
-  //_setupWaves();
+// synthesize a window of audio, this should be called after flush() and after any processing is done
+void ClassAudioLab::synthesize() {
+  generateAudio();
+}
 
-  _generateAudio();
+// pull samples from audio input buffer into outputBuffer, this should be called after ready() but before flush()
+void ClassAudioLab::pullSamples(int* aBuffer) {
+    for (int i = 0; i < WINDOW_SIZE; i++) {
+        aBuffer[i] = AUD_IN_BUFFER[i];
+    }
 }

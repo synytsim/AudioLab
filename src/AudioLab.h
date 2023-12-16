@@ -18,26 +18,26 @@
 
 #include "Wave.h"
 
-class AudioLab_
+class ClassAudioLab
 {
   private:
     // constructor for AudioLab
-    AudioLab_();
+    ClassAudioLab();
 
-    void _initAudio();
-    void _initISR();
-    void _initWaveList();
+    void initAudio();
+    void initISR();
+    void initWaveList();
 
-    void _calculateWaves();
-    void _calculateWindowingWave();
+    void calculateWaves();
+    void calculateWindowingWave();
 
-    float _getWaveVal(Wave* w);
-    float _getSumOfChannel(uint8_t ch);
+    float getWaveVal(Wave* aWave);
+    float getSumOfChannel(uint8_t aChannel);
 
-    void _generateAudio();
+    void generateAudio();
 
-    void _resetGenerateAudio();
-    void _resetAudInOut();
+    void resetGenerateAudio();
+    void resetAudInOut();
 
     struct waveNode {
       waveNode() : waveRef(NULL), prev(NULL), next(NULL) {}
@@ -48,19 +48,17 @@ class AudioLab_
     };
 
     static waveNode* waveListHead[NUM_OUT_CH];
-  
 
     static const int AUD_IN_BUFFER_SIZE = WINDOW_SIZE;
     static const int AUD_OUT_BUFFER_SIZE = WINDOW_SIZE * 2;
     static const int GEN_AUD_BUFFER_SIZE = WINDOW_SIZE * 3;
 
+    static float generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
     static float windowingCosWave[AUD_OUT_BUFFER_SIZE];
     static float sinWave[SAMPLE_FREQ];
 
     volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
     volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
-
-    static float generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
 
     // function that gets called when timer is triggered
     static void IRAM_ATTR AUD_IN_OUT(void);
@@ -73,11 +71,11 @@ class AudioLab_
 
   public:
     // delete assignment operators
-    AudioLab_(const AudioLab_ &) = delete;
-    AudioLab_ &operator=(const AudioLab_ &) = delete;
+    ClassAudioLab(const ClassAudioLab &) = delete;
+    ClassAudioLab &operator=(const ClassAudioLab &) = delete;
 
-    // returns singleton instance of AudioLab
-    static AudioLab_ &getInstance(); // public maybe ?
+    // returns instance of AudioLab
+    static ClassAudioLab &getInstance();
 
     void init();
 
@@ -87,16 +85,16 @@ class AudioLab_
 
     void flush();
 
-    void pullSamples(int* output);
+    void pullSamples(int* aBuffer);
 
     void synthesize();
 
     Wave createWave();
 
-    void _pushWaveNode(Wave* thisWave);
-    void _removeWaveNode(Wave* thisWave);    
+    void pushWaveNode(Wave* aWave);
+    void removeWaveNode(Wave* aWave);    
 };
 
-extern AudioLab_ &AudioLab;
+extern ClassAudioLab &AudioLab;
 
 #endif
