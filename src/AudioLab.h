@@ -6,15 +6,21 @@
 #include <driver/adc.h>
 #include <math.h>
 
+#ifndef WINDOW_SIZE
 #define WINDOW_SIZE 256
+#endif
+
+#ifndef SAMPLE_FREQ
 #define SAMPLE_FREQ 8192
+#endif
 
+#ifndef NUM_OUT_CH
 #define NUM_OUT_CH 2 
-
-#define MAX_NUM_WAVES 8
+#endif
 
 #define AUD_IN_PIN ADC1_CHANNEL_6
-#define AUD_OUT_PIN A0
+#define AUD_OUT_PIN1 A0
+#define AUD_OUT_PIN2 A1
 
 #include "Wave.h"
 
@@ -28,26 +34,26 @@ class ClassAudioLab
     void initISR();
     void initWaveList();
 
-    void calculateWaves();
     void calculateWindowingWave();
-
-    float getWaveVal(Wave* aWave);
     float getSumOfChannel(uint8_t aChannel);
-
     void generateAudio();
 
     void resetGenerateAudio();
     void resetAudInOut();
+    
+    static void removeOutOfScopeWaves();
 
     struct waveNode {
-      waveNode() : waveRef(NULL), prev(NULL), next(NULL) {}
+      waveNode() : waveRef(NULL), isDynamic(0), prev(NULL), next(NULL) {}
 
       Wave* waveRef;
+      bool isDynamic;
       waveNode* prev;
       waveNode* next;
     };
 
     static waveNode* waveListHead[NUM_OUT_CH];
+    static int numWaveNodes;
 
     static const int AUD_IN_BUFFER_SIZE = WINDOW_SIZE;
     static const int AUD_OUT_BUFFER_SIZE = WINDOW_SIZE * 2;
@@ -89,10 +95,11 @@ class ClassAudioLab
 
     void synthesize();
 
-    Wave createWave();
+    void quickWave(int aChannel, int aFrequency, int anAmplitude, int aPhase = 0);
 
-    void pushWaveNode(Wave* aWave);
-    void removeWaveNode(Wave* aWave);    
+    static void pushWaveNode(Wave* aWave, bool quickWave = 0);
+    static void removeWaveNode(Wave* aWave);    
+    static bool waveNodeExists(Wave* aWave);
 };
 
 extern ClassAudioLab &AudioLab;

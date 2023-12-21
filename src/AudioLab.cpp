@@ -15,11 +15,13 @@ ClassAudioLab &AudioLab = ClassAudioLab::getInstance();
 void ClassAudioLab::init() {
 
   delay(3000);
-  pinMode(AUD_OUT_PIN, OUTPUT);
+  pinMode(AUD_OUT_PIN1, OUTPUT);
+  pinMode(AUD_OUT_PIN2, OUTPUT);
   adc1_config_width(ADC_WIDTH_12Bit);
   adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_11db);
 
   initISR();
+  Serial.println(SAMPLE_FREQ);
 }
 
 // reset AudioLab, may be useful in certain events
@@ -35,6 +37,7 @@ bool ClassAudioLab::ready() {
 // continue audio sampling, this should be called when ready() returns true
 void ClassAudioLab::flush() {
   SYNC_AUD_IN_OUT_IDX();
+  removeOutOfScopeWaves();
 }
 
 // synthesize a window of audio, this should be called after flush() and after any processing is done

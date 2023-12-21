@@ -7,7 +7,7 @@ class Wave
 
     Wave();
     //Wave(int channel); 
-    //Wave(int channel, int freq, int amp, int phase = 0);
+    Wave(int aChannel, int aFrequency, int anAmplitude, int aPhase);
 
     ~Wave();  
 
@@ -16,12 +16,20 @@ class Wave
     void setPhase(int aPhase);
     void setChannel(int aChannel);
 
+    void reset();
+
     int getFrequency();
     int getAmplitude();
     int getPhase();
     int getChannel();
 
+    float getWaveVal(int waveIdx);
+
+    static void calculateWaves();
+
   private:
+
+    static float sinWave[SAMPLE_FREQ];
 
     int frequency;
     int amplitude;
