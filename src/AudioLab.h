@@ -6,23 +6,19 @@
 #include <driver/adc.h>
 #include <math.h>
 
-#ifndef WINDOW_SIZE
 #define WINDOW_SIZE 256
-#endif
 
-#ifndef SAMPLE_FREQ
-#define SAMPLE_FREQ 8192
-#endif
+#define SAMPLE_RATE 8192
 
-#ifndef NUM_OUT_CH
 #define NUM_OUT_CH 2 
-#endif
 
 #define AUD_IN_PIN ADC1_CHANNEL_6
 #define AUD_OUT_PIN1 A0
 #define AUD_OUT_PIN2 A1
 
 #include "Wave.h"
+
+typedef ClassWave* Wave;
 
 class ClassAudioLab
 {
@@ -40,13 +36,14 @@ class ClassAudioLab
 
     void resetGenerateAudio();
     void resetAudInOut();
-    
-    static void removeOutOfScopeWaves();
+
+    inline Wave getNewWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType);
+    static void removeDynamicWaves();
 
     struct waveNode {
       waveNode() : waveRef(NULL), isDynamic(0), prev(NULL), next(NULL) {}
 
-      Wave* waveRef;
+      Wave waveRef;
       bool isDynamic;
       waveNode* prev;
       waveNode* next;
@@ -61,7 +58,6 @@ class ClassAudioLab
 
     static float generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
     static float windowingCosWave[AUD_OUT_BUFFER_SIZE];
-    static float sinWave[SAMPLE_FREQ];
 
     volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
     volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
@@ -95,11 +91,12 @@ class ClassAudioLab
 
     void synthesize();
 
-    void quickWave(int aChannel, int aFrequency, int anAmplitude, int aPhase = 0);
+    Wave staticWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0,  WaveType aWaveType = SINE);
+    Wave dynamicWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0,  WaveType aWaveType = SINE);
 
-    static void pushWaveNode(Wave* aWave, bool quickWave = 0);
-    static void removeWaveNode(Wave* aWave);    
-    static bool waveNodeExists(Wave* aWave);
+    static void pushWaveNode(Wave aWave, bool dynamicWave = 0);
+    static bool removeWaveNode(Wave aWave);    
+    static bool waveNodeExists(Wave aWave);
 };
 
 extern ClassAudioLab &AudioLab;

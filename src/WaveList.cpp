@@ -3,19 +3,20 @@
 ClassAudioLab::waveNode* ClassAudioLab::waveListHead[NUM_OUT_CH];
 int ClassAudioLab::numWaveNodes = 0;
 
-// initializes wave list pointers
+// initializes wave list head pointer
 void ClassAudioLab::initWaveList() {
-  for (int i = 0; i < NUM_OUT_CH; i++) {
-    waveListHead[i] = NULL;
+  for (uint8_t _channel = 0; _channel < NUM_OUT_CH; _channel++) {
+    waveListHead[_channel] = NULL;
   }
   numWaveNodes = 0;
 }
 
-bool ClassAudioLab::waveNodeExists(Wave* aWave) {
-  for (int _channel = 0; _channel < NUM_OUT_CH; _channel++) {
+// returns true if waveNode with pointer to aWave exists
+bool ClassAudioLab::waveNodeExists(Wave aWave) {
+  for (uint8_t _channel = 0; _channel < NUM_OUT_CH; _channel++) {
     waveNode* _currentNode = waveListHead[_channel];
     while (_currentNode != NULL) {
-      if (_currentNode->waveRef == aWave) return 1;
+      if (_currentNode->waveRef == aWave) return 1;  
       _currentNode = _currentNode->next;
     }
   }
@@ -23,42 +24,52 @@ bool ClassAudioLab::waveNodeExists(Wave* aWave) {
 }
 
 // push a wave node onto the waveList, this function is called by constructor of Wave
-void ClassAudioLab::pushWaveNode(Wave* aWave, bool quickWave) {
+void ClassAudioLab::pushWaveNode(Wave aWave, bool dynamicWave) {
   if (aWave == NULL) return;
+  // increment number of wave nodes
   numWaveNodes += 1;
 
-  int _channel = aWave->getChannel();
 
+  // allocate memory for wave node
   waveNode* _newNode = (waveNode*)malloc(sizeof(waveNode));
   _newNode->waveRef = aWave;
   _newNode->prev = NULL;
   _newNode->next = NULL;
-  _newNode->isDynamic = quickWave;
+  _newNode->isDynamic = dynamicWave;
 
+  // get the channel of aWave
+  uint8_t _channel = aWave->getChannel();
+
+  // if wave list is empty assign new node to wave list head
   if (waveListHead[_channel] == NULL) {
     waveListHead[_channel] = _newNode;
   } else {
-    waveNode* _currentNode = waveListHead[_channel];
-    waveNode* _prevNode = NULL;
+    // otherwise find the next free pointer in wave list
+    waveNode* _prevNode = waveListHead[_channel];
+    waveNode* _currentNode = _prevNode->next;
     
     while( _currentNode != NULL ) {
       _prevNode = _currentNode;
       _currentNode = _currentNode->next;
     }
 
+    // assign new node to free pointer
     _currentNode = _newNode;
 
-    if (_prevNode != NULL) _prevNode->next = _currentNode;
+    // link next and previous nodes
+    _prevNode->next = _currentNode;
     _currentNode->prev = _prevNode;
   }
 }
 
 // remove a wave node from waveList, this function is called by destructor of Wave
-void ClassAudioLab::removeWaveNode(Wave* aWave) {
-  if (aWave == NULL) return;
+bool ClassAudioLab::removeWaveNode(Wave aWave) {
+  if (aWave == NULL) return 0;
+  // decrement number of wave nodes
   numWaveNodes -= 1;
 
-  int _channel = aWave->getChannel();
+  // get the channel of aWave
+  uint8_t _channel = aWave->getChannel();
 
   waveNode* _currentNode = waveListHead[_channel];
   
@@ -79,23 +90,42 @@ void ClassAudioLab::removeWaveNode(Wave* aWave) {
     _prevNode->next = _nextNode;
     if (_nextNode != NULL) _nextNode->prev = _prevNode;
   }
+  bool _isDynamic = _currentNode->isDynamic;
   free(_currentNode);
+  return _isDynamic;
 }
 
-void ClassAudioLab::quickWave(int aChannel, int aFrequency, int anAmplitude, int aPhase) {
-  Wave* _newWave = (Wave*)malloc(sizeof(Wave));
+Wave ClassAudioLab::getNewWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
+  Wave _newWave = NULL;
+  if (aWaveType == SINE) _newWave = new Sine;
+  else if (aWaveType == COSINE) _newWave = new Cosine;
+  else if (aWaveType == SQUARE) _newWave = new Square;
+  else if (aWaveType == SAWTOOTH) _newWave = new Sawtooth;
+  else if (aWaveType == TRIANGLE) _newWave = new Triangle;
+
   _newWave->setChannel(aChannel);
   _newWave->setFrequency(aFrequency);
   _newWave->setAmplitude(anAmplitude);
   _newWave->setPhase(aPhase);
 
-  pushWaveNode(_newWave, 1);
-  // Wave(aChannel, aFrequency, anAmplitude, aPhase);
+  return _newWave;
 }
 
-void ClassAudioLab::removeOutOfScopeWaves() {
-  for (int channel = 0; channel < NUM_OUT_CH; channel++) {
-    waveNode* _currentNode = waveListHead[channel];
+Wave ClassAudioLab::staticWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
+  Wave _newWave = getNewWave(aChannel, aFrequency, anAmplitude, aPhase, aWaveType);
+  pushWaveNode(_newWave, 0);
+  return _newWave;
+}
+
+Wave ClassAudioLab::dynamicWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
+  Wave _newWave = getNewWave(aChannel, aFrequency, anAmplitude, aPhase, aWaveType);
+  pushWaveNode(_newWave, 1);
+  return _newWave;
+}
+
+void ClassAudioLab::removeDynamicWaves() {
+  for (uint8_t _channel = 0; _channel < NUM_OUT_CH; _channel++) {
+    waveNode* _currentNode = waveListHead[_channel];
     waveNode* _thisNode = NULL;
 
     while (_currentNode != NULL) {
@@ -103,9 +133,9 @@ void ClassAudioLab::removeOutOfScopeWaves() {
       _currentNode = _currentNode->next;
 
       if (_thisNode->isDynamic == 0) continue;
-      Wave* _thisWave = _thisNode->waveRef;
+      Wave _thisWave = _thisNode->waveRef;
       removeWaveNode(_thisWave);
-      free(_thisWave);
+      delete _thisWave;
     }
   }
 }

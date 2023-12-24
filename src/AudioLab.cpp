@@ -20,8 +20,13 @@ void ClassAudioLab::init() {
   adc1_config_width(ADC_WIDTH_12Bit);
   adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_11db);
 
+  float _sampleDelay = 1000000 / SAMPLE_RATE;
+  Serial.printf("SAMPLE RATE: %d Hz    WINDOW SIZE: %d    SPEED : %.1f Hz    TIME PER WINDOW: %.1f ms", SAMPLE_RATE, WINDOW_SIZE, float(SAMPLE_RATE) / WINDOW_SIZE,  _sampleDelay * WINDOW_SIZE * 0.001);
+  Serial.println();
+
+  delay(1000);
   initISR();
-  Serial.println(SAMPLE_FREQ);
+  Serial.println("AudioLab setup complete");
 }
 
 // reset AudioLab, may be useful in certain events
@@ -37,7 +42,7 @@ bool ClassAudioLab::ready() {
 // continue audio sampling, this should be called when ready() returns true
 void ClassAudioLab::flush() {
   SYNC_AUD_IN_OUT_IDX();
-  removeOutOfScopeWaves();
+  removeDynamicWaves();
 }
 
 // synthesize a window of audio, this should be called after flush() and after any processing is done

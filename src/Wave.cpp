@@ -1,89 +1,110 @@
 #include "AudioLab.h"
 
-float Wave::sinWave[SAMPLE_FREQ];
-bool wavesInitialzed = 0;
+const float _SAMPLE_RATE = 1.0 / SAMPLE_RATE;
+const int NYQUIST = int(SAMPLE_RATE) >> 1;
+const int WAVE_OFFSET = NYQUIST >> 1;
 
-const float _SAMPLE_FREQ = 1.0 / SAMPLE_FREQ;
+float StaticSineWave[SAMPLE_RATE];
+bool StaticSineWaveInitialzed = 0;
 
-// Wave constructor
-Wave::Wave(void) {
-  AudioLab.pushWaveNode(this, 0);
+// ClassWave constructor
+ClassWave::ClassWave(void) {
   this->frequency = 0;
   this->amplitude = 0;
   this->phase = 0;
   this->channel = 0;
-  Serial.println("WAVE ADDED");
+  //Serial.println("WAVE ADDED");
 }
 
-// Wave::Wave(int channel) {
-//   AudioLab::_pushWaveNode(this);
-
-//   _freq = 0;
-//   _amp = 0;
-//   _phase = 0;
-//   _channel = channel;
-//   Serial.println("WAVE ADDED");
-// }
-
-Wave::Wave(int aChannel, int aFrequency, int anAmplitude, int aPhase) {
-  AudioLab.pushWaveNode(this, 0);
-
-  frequency = aFrequency;
-  amplitude = anAmplitude;
-  phase = aPhase;
-  channel = aChannel;
-  Serial.println("WAVE ADDED");
+ClassWave::ClassWave(int aChannel) {
+  this->frequency = 0;
+  this->amplitude = 0;
+  this->phase = 0;
+  this->channel = aChannel;
+  //Serial.println("WAVE ADDED");
 }
 
-// Wave destructor
-Wave::~Wave(void) {
-  AudioLab.removeWaveNode(this);
-  Serial.println("WAVE REMOVED");
+ClassWave::ClassWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) {
+  this->frequency = aFrequency;
+  this->amplitude = anAmplitude;
+  this->phase = aPhase;
+  this->channel = aChannel;
+  //Serial.println("WAVE ADDED");
 }
 
-void Wave::setFrequency(int aFrequency) { this->frequency = aFrequency; }
-void Wave::setAmplitude(int anAmplitude) { this->amplitude = anAmplitude; }
-void Wave::setPhase(int aPhase) { this->phase = aPhase; }
-void Wave::setChannel(int aChannel)  { 
+// ClassWave destructor
+ClassWave::~ClassWave(void) {
+  //Serial.println("WAVE REMOVED");
+}
+
+void ClassWave::set(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) {
+  this->setChannel(aChannel);
+  this->frequency = aFrequency;
+  this->amplitude = anAmplitude;
+  this->phase = aPhase;
+}
+
+void ClassWave::reset() {
+  this->frequency = 0;
+  this->amplitude = 0;
+  this->phase = 0;
+}
+
+void ClassWave::setFrequency(int aFrequency) { this->frequency = aFrequency; }
+void ClassWave::setAmplitude(int anAmplitude) { this->amplitude = anAmplitude; }
+void ClassWave::setPhase(int aPhase) { this->phase = aPhase; }
+
+void ClassWave::setChannel(uint8_t aChannel)  {  
+  if (this->channel == aChannel) return;
+
   if (AudioLab.waveNodeExists(this)) {
-    AudioLab.removeWaveNode(this);
+    bool _isDynamic = AudioLab.removeWaveNode(this);
     this->channel = aChannel; 
-    AudioLab.pushWaveNode(this);
-    return;
+    AudioLab.pushWaveNode(this, _isDynamic);
+  } else {
+    this->channel = aChannel;
   }
-  this->channel = aChannel; 
 }
 
-void Wave::reset() {
-  frequency = 0;
-  amplitude = 0;
-  phase = 0;
-}
+int ClassWave::getFrequency(void) { return this->frequency; }
+int ClassWave::getAmplitude(void) { return this->amplitude; }
+int ClassWave::getPhase(void) { return this->phase; }
+uint8_t ClassWave::getChannel(void) { return this->channel; }
 
-int Wave::getFrequency(void) { return this->frequency; }
-int Wave::getAmplitude(void) { return this->amplitude; }
-int Wave::getPhase(void) { return this->phase; }
-int Wave::getChannel(void) { return this->channel; }
-
-float Wave::getWaveVal(int waveIdx) {
-  float _waveFrequencyIdx = (waveIdx * frequency + phase) * _SAMPLE_FREQ;
-  int _localWaveIdx = (_waveFrequencyIdx - floor(_waveFrequencyIdx)) * SAMPLE_FREQ;
-  // return (_amplitude * wave value) at wave position
-  return amplitude * sinWave[_localWaveIdx];
-}
-
-// calculate values for various waves
-void Wave::calculateWaves(void) {
-  if (wavesInitialzed) return;
-  wavesInitialzed = 1;
-  float _resolution = float(2.0 * PI / SAMPLE_FREQ);
-  // float tri_wave_step = 4.0 / SAMPLE_FREQ;
-  // float saw_wave_step = 1.0 / SAMPLE_FREQ;
-  for (int x = 0; x < SAMPLE_FREQ; x++) {
-    sinWave[x] = sin(float(_resolution * x));
-    // cos_wave[x] = cos(float(resolution * x));
-    // tri_wave[x] = x <= SAMPLE_FREQ / 2 ? x * tri_wave_step - 1.0 : 3.0 - x * tri_wave_step;
-    // sqr_wave[x] = x <= SAMPLE_FREQ / 2 ? 1.0 : 0.0;
-    // saw_wave[x] = x * saw_wave_step;
+// calculate values for a 1Hz sine wave sampled at SAMPLE_RATE
+void ClassWave::calculateSineWave(void) {
+  if (StaticSineWaveInitialzed) return;
+  StaticSineWaveInitialzed = 1;
+  float _resolution = float(2.0 * PI / SAMPLE_RATE);
+  for (int x = 0; x < SAMPLE_RATE; x++) {
+    StaticSineWave[x] = sin(float(_resolution * x));
   }
+}
+
+float ClassWave::getTimeValue(int aTimeIdx, int anOffset) {
+  float _waveTimeValue= (aTimeIdx * frequency + phase + anOffset) * _SAMPLE_RATE;
+  return _waveTimeValue - floor(_waveTimeValue);
+}
+
+float Sine::getWaveValue(int aTimeIdx) {;
+  return amplitude * StaticSineWave[int(getTimeValue(aTimeIdx) * SAMPLE_RATE)];
+}
+
+float Cosine::getWaveValue(int aTimeIdx) {
+  return amplitude * StaticSineWave[int(getTimeValue(aTimeIdx, WAVE_OFFSET) * SAMPLE_RATE)];
+}
+
+float Square::getWaveValue(int aTimeIdx) {
+  if (getTimeValue(aTimeIdx) < 0.5) return amplitude;
+  return -amplitude;
+}
+
+float Triangle::getWaveValue(int aTimeIdx) {
+  float _localTimeValue = getTimeValue(aTimeIdx, WAVE_OFFSET);
+  if (_localTimeValue < 0.5) return -amplitude + 4 * amplitude * _localTimeValue;
+  return amplitude - 4 * amplitude * (_localTimeValue - 0.5);
+}
+
+float Sawtooth::getWaveValue(int aTimeIdx) {
+  return 2 * amplitude * getTimeValue(aTimeIdx, NYQUIST) - amplitude;
 }

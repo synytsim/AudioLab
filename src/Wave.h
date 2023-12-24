@@ -1,45 +1,81 @@
 #ifndef Wave_h
 #define Wave_h
 
-class Wave
+enum WaveType
 {
-  public:
+  SINE,
+  COSINE,
+  SQUARE,
+  SAWTOOTH,
+  TRIANGLE
+};
 
-    Wave();
-    //Wave(int channel); 
-    Wave(int aChannel, int aFrequency, int anAmplitude, int aPhase);
-
-    ~Wave();  
-
-    void setFrequency(int aFrequency);
-    void setAmplitude(int anAmplitude);
-    void setPhase(int aPhase);
-    void setChannel(int aChannel);
-
-    void reset();
-
-    int getFrequency();
-    int getAmplitude();
-    int getPhase();
-    int getChannel();
-
-    float getWaveVal(int waveIdx);
-
-    static void calculateWaves();
-
-  private:
-
-    static float sinWave[SAMPLE_FREQ];
+class ClassWave
+{
+  protected:
 
     int frequency;
     int amplitude;
     int phase;
-    int channel;
-    
-    // static void _pushWaveNode(Wave* thisWave);
-    // static void _removeWaveNode(Wave* thisWave);
-    // static void _getWaveList();
+    uint8_t channel;
+  
+  public:
 
+    ClassWave();
+    ClassWave(int channel); 
+    ClassWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0);
+
+    ~ClassWave();  
+
+    void set(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0);
+    void reset();
+
+    void setFrequency(int aFrequency);
+    void setAmplitude(int anAmplitude);
+    void setPhase(int aPhase);
+    void setChannel(uint8_t aChannel);
+
+    int getFrequency();
+    int getAmplitude();
+    int getPhase();
+    uint8_t getChannel();
+
+    inline float getTimeValue(int aTimeIdx, int anOffset = 0);
+
+    virtual float getWaveValue(int aTimeIdx) = 0;
+
+    static void calculateSineWave();
+
+};
+
+class Sine: public ClassWave
+{
+  public:
+    float getWaveValue(int aTimeIdx);
+};
+
+class Cosine: public ClassWave
+{
+  public:
+    float getWaveValue(int aTimeIdx);
+};
+
+class Square: public ClassWave
+{
+  public:
+    float getWaveValue(int aTimeIdx);
+};
+
+class Sawtooth: public ClassWave
+{
+  public:
+    float getWaveValue(int aTimeIdx);
+};
+
+class Triangle: public ClassWave
+{
+  public:
+    float getWaveValue(int aTimeIdx);
 };
 
 #endif

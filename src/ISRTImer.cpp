@@ -1,6 +1,6 @@
 #include "AudioLab.h"
 
-const int sampleDelayTime = 1000000 / SAMPLE_FREQ;
+const int sampleDelayTime = 1000000 / SAMPLE_RATE;
 
 hw_timer_t* SAMPLING_TIMER = NULL;
 
@@ -32,8 +32,13 @@ void IRAM_ATTR ClassAudioLab::AUD_IN_OUT() {
   if (AUD_IN_BUFFER_FULL()) return;
 
   int AUD_OUT_BUFFER_IDX = AUD_OUT_BUFFER_POS + AUD_IN_BUFFER_IDX;
+  #if NUM_OUT_CH >= 1
   dacWrite(AUD_OUT_PIN1, AUD_OUT_BUFFER[0][AUD_OUT_BUFFER_IDX]);
+  #endif
+  
+  #if NUM_OUT_CH >= 2
   dacWrite(AUD_OUT_PIN2, AUD_OUT_BUFFER[1][AUD_OUT_BUFFER_IDX]);
+  #endif
 
   AUD_IN_BUFFER[AUD_IN_BUFFER_IDX] = adc1_get_raw(AUD_IN_PIN);
 
