@@ -1,11 +1,11 @@
 #include "AudioLab.h"
 
-const float _SAMPLE_RATE = 1.0 / SAMPLE_RATE;
-const int NYQUIST = int(SAMPLE_RATE) >> 1;
-const int WAVE_OFFSET = NYQUIST >> 1;
-
 float StaticSineWave[SAMPLE_RATE];
 bool StaticSineWaveInitialzed = 0;
+
+const float INVERSE_SAMPLE_RATE = 1.0 / SAMPLE_RATE;
+const int NYQUIST = int(SAMPLE_RATE) >> 1;
+const int WAVE_OFFSET = NYQUIST >> 1;
 
 // ClassWave constructor
 ClassWave::ClassWave(void) {
@@ -38,7 +38,7 @@ ClassWave::~ClassWave(void) {
 }
 
 void ClassWave::set(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) {
-  this->setChannel(aChannel);
+  this->channel = aChannel;
   this->frequency = aFrequency;
   this->amplitude = anAmplitude;
   this->phase = aPhase;
@@ -53,18 +53,7 @@ void ClassWave::reset() {
 void ClassWave::setFrequency(int aFrequency) { this->frequency = aFrequency; }
 void ClassWave::setAmplitude(int anAmplitude) { this->amplitude = anAmplitude; }
 void ClassWave::setPhase(int aPhase) { this->phase = aPhase; }
-
-void ClassWave::setChannel(uint8_t aChannel)  {  
-  if (this->channel == aChannel) return;
-
-  if (AudioLab.waveNodeExists(this)) {
-    bool _isDynamic = AudioLab.removeWaveNode(this);
-    this->channel = aChannel; 
-    AudioLab.pushWaveNode(this, _isDynamic);
-  } else {
-    this->channel = aChannel;
-  }
-}
+void ClassWave::setChannel(uint8_t aChannel)  { this->channel = aChannel; }
 
 int ClassWave::getFrequency(void) { return this->frequency; }
 int ClassWave::getAmplitude(void) { return this->amplitude; }
@@ -81,30 +70,39 @@ void ClassWave::calculateSineWave(void) {
   }
 }
 
-float ClassWave::getTimeValue(int aTimeIdx, int anOffset) {
-  float _waveTimeValue= (aTimeIdx * frequency + phase + anOffset) * _SAMPLE_RATE;
-  return _waveTimeValue - floor(_waveTimeValue);
-}
+// float ClassWave::getTimeValue(int aTimeIdx, int anOffset) {
+//   float _waveTimeValue= (aTimeIdx * frequency + phase + anOffset) * INVERSE_SAMPLE_RATE;
+//   return _waveTimeValue - floor(_waveTimeValue);
+// }
 
 float Sine::getWaveValue(int aTimeIdx) {;
-  return amplitude * StaticSineWave[int(getTimeValue(aTimeIdx) * SAMPLE_RATE)];
+  float _timeValue = (aTimeIdx * frequency + phase) * INVERSE_SAMPLE_RATE;
+  int _timeIdx = (_timeValue - floor(_timeValue)) * SAMPLE_RATE;
+  return amplitude * StaticSineWave[_timeIdx];
 }
 
 float Cosine::getWaveValue(int aTimeIdx) {
-  return amplitude * StaticSineWave[int(getTimeValue(aTimeIdx, WAVE_OFFSET) * SAMPLE_RATE)];
+  float _timeValue = (aTimeIdx * frequency + phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
+  int _timeIdx = (_timeValue - floor(_timeValue)) * SAMPLE_RATE;
+  return amplitude * StaticSineWave[_timeIdx];
 }
 
 float Square::getWaveValue(int aTimeIdx) {
-  if (getTimeValue(aTimeIdx) < 0.5) return amplitude;
+  float _timeValue = (aTimeIdx * frequency + phase) * INVERSE_SAMPLE_RATE;
+  float _timeIdx = _timeValue - floor(_timeValue);
+  if (_timeIdx < 0.5) return amplitude;
   return -amplitude;
 }
 
 float Triangle::getWaveValue(int aTimeIdx) {
-  float _localTimeValue = getTimeValue(aTimeIdx, WAVE_OFFSET);
-  if (_localTimeValue < 0.5) return -amplitude + 4 * amplitude * _localTimeValue;
-  return amplitude - 4 * amplitude * (_localTimeValue - 0.5);
+  float _timeValue = (aTimeIdx * frequency + phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
+  float _timeIdx = _timeValue - floor(_timeValue);
+  if (_timeIdx < 0.5) return -amplitude + (amplitude << 2) * _timeIdx;
+  return amplitude - (amplitude << 2) * (_timeIdx - 0.5);
 }
 
 float Sawtooth::getWaveValue(int aTimeIdx) {
-  return 2 * amplitude * getTimeValue(aTimeIdx, NYQUIST) - amplitude;
+  float _timeValue = (aTimeIdx * frequency + phase + NYQUIST) * INVERSE_SAMPLE_RATE;
+  float _timeIdx = _timeValue - floor(_timeValue);
+  return (amplitude << 1) * _timeIdx - amplitude;
 }

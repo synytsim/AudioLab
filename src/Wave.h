@@ -40,7 +40,7 @@ class ClassWave
     int getPhase();
     uint8_t getChannel();
 
-    inline float getTimeValue(int aTimeIdx, int anOffset = 0);
+    //inline float getTimeValue(int aTimeIdx, int anOffset = 0);
 
     virtual float getWaveValue(int aTimeIdx) = 0;
 

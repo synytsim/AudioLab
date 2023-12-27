@@ -26,39 +26,72 @@ class ClassAudioLab
     // constructor for AudioLab
     ClassAudioLab();
 
+    // initialize audio input and output
     void initAudio();
+
+    // initialize timer interrupt
     void initISR();
+
+    // initializes wave list head pointer
     void initWaveList();
 
+    // calculates values for windowing wave
     void calculateWindowingWave();
+
+    // returns the sum of a channel
     float getSumOfChannel(uint8_t aChannel);
+
+    // generate one window of signal
     void generateAudio();
 
+    // reset generate audio, this is only called during certain events such as init() and reset()
     void resetGenerateAudio();
+
+    // reset audio input, output buffers and indexes
     void resetAudInOut();
 
-    inline Wave getNewWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType);
-    static void removeDynamicWaves();
+    // returns pointer to a wave of wave type
+    Wave getNewWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType);
 
-    struct waveNode {
-      waveNode() : waveRef(NULL), isDynamic(0), prev(NULL), next(NULL) {}
+    // removes all dynamic waves from wave list
+    void removeDynamicWaves();
+
+    // wave node
+    struct WaveNode {
+      WaveNode() : waveRef(NULL), next(NULL), isDynamic(0) {}
+      WaveNode(Wave aReference, WaveNode* nextNode, int dynamic) : waveRef(aReference), next(nextNode), isDynamic(dynamic) {}
 
       Wave waveRef;
+      WaveNode* next;
       bool isDynamic;
-      waveNode* prev;
-      waveNode* next;
     };
 
-    static waveNode* waveListHead[NUM_OUT_CH];
-    static int numWaveNodes;
+    // push a wave node onto the waveList
+    static void pushWaveNode(Wave aWave, WaveNode*& aWaveList, bool isDynamic = 0);
 
+    // remove a node from wave list, returns whether or not wave is dynamic
+    static void removeWaveNode(Wave aWave, WaveNode*& aWaveList);    
+
+    // recursively deletes all nodes from wavelist (wave reference associated with a node remains untouched!)
+    void freeWaveList(WaveNode*& aWaveList);
+    void freeWaveListHelper(WaveNode* waveNode);
+
+    // linked list storing references to all waves
+    static WaveNode* globalWaveList;
+
+    // linked list storing references to waves the need to be synthesizes (ie amplitude != 0 or frequency and phase != 0)
+    static WaveNode* generateAudioWaveList[NUM_OUT_CH]; 
+
+    // input, output and generate audio buffer sizes
     static const int AUD_IN_BUFFER_SIZE = WINDOW_SIZE;
     static const int AUD_OUT_BUFFER_SIZE = WINDOW_SIZE * 2;
     static const int GEN_AUD_BUFFER_SIZE = WINDOW_SIZE * 3;
 
+    // generate audio buffers
     static float generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
     static float windowingCosWave[AUD_OUT_BUFFER_SIZE];
 
+    // input and output buffers
     volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
     volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
 
@@ -79,24 +112,30 @@ class ClassAudioLab
     // returns instance of AudioLab
     static ClassAudioLab &getInstance();
 
+    // initialize AudioLab
     void init();
 
+    // reset AudioLab
     void reset();
 
+    // returns true when signal synthesis should occur and/or input buffer fills
     bool ready();
 
+    // restores/synchronizes input/output indexes, and clears dynamic waves
     void flush();
 
+    // pulls samples from input buffer into a buffer
     void pullSamples(int* aBuffer);
 
+    // synthesizes one window of signal
     void synthesize();
 
+    // returns a "static" pointer to a wave of specified type (this wave exists throughout runtime of whole program)
     Wave staticWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0,  WaveType aWaveType = SINE);
+
+    // returns a "dynamic" pointer to a wave of specified type (this wave only exists within the scope of ready())
     Wave dynamicWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0,  WaveType aWaveType = SINE);
 
-    static void pushWaveNode(Wave aWave, bool dynamicWave = 0);
-    static bool removeWaveNode(Wave aWave);    
-    static bool waveNodeExists(Wave aWave);
 };
 
 extern ClassAudioLab &AudioLab;

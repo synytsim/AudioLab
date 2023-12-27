@@ -3,15 +3,18 @@
 float ClassAudioLab::windowingCosWave[AUD_OUT_BUFFER_SIZE];
 float ClassAudioLab::generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
 
+ClassAudioLab::WaveNode* ClassAudioLab::generateAudioWaveList[NUM_OUT_CH]; 
+
 int generateAudioBufferIdx = 0;
 int generateAudioOutBufferIdx = 0;
-int staticTimeIdx = 0;
+int staticTimeIdx = 0; 
 
 // reset generate audio, this is only called during certain events such as init() and reset()
 void ClassAudioLab::resetGenerateAudio() {
   // restore scratch pad buffer values
-  for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
-    for (int c = 0; c < NUM_OUT_CH; c++) {
+  for (int c = 0; c < NUM_OUT_CH; c++) {
+    generateAudioWaveList[NUM_OUT_CH] = NULL;
+    for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
       generateAudioBuffer[c][i] = 0.0;
     }
   }
@@ -25,9 +28,6 @@ void ClassAudioLab::resetGenerateAudio() {
 void ClassAudioLab::initAudio() {
   // calculate cosine wave for windowing
   calculateWindowingWave();
-  
-  // initialize wave list
-  initWaveList();
 
   // reset buffers
   resetGenerateAudio();
@@ -49,8 +49,8 @@ void ClassAudioLab::calculateWindowingWave(void) {
 float ClassAudioLab::getSumOfChannel(uint8_t aChannel) {
   float _sum = 0.0;
   // iterate through waves in a channel and get the total sum of the waves
-  waveNode* _currentNode = waveListHead[aChannel];
-  if (_currentNode == NULL) return 0.0;
+  WaveNode* _currentNode = generateAudioWaveList[aChannel];
+  if (_currentNode == NULL) return _sum;
   while (_currentNode != NULL) {
     _sum += _currentNode->waveRef->getWaveValue(staticTimeIdx);
     //_sum += getWaveVal(_currentNode->waveRef);
@@ -62,25 +62,13 @@ float ClassAudioLab::getSumOfChannel(uint8_t aChannel) {
 // synthesizes one window of values for audio output
 void ClassAudioLab::generateAudio() {
 
-  // temporarily remove waves that don't need to be synthesized (to improve performance) and store in temporary buffers
-  Wave _tempWavePtr[numWaveNodes];
-  bool _tempWaveIsDynamic[numWaveNodes];
-  int _tempWavePtrCount = 0;
-
-  // look through each channel to find waves that don't need to be synthesized
-  for (int c = 0; c < NUM_OUT_CH; c++) {
-    waveNode* _currentNode = waveListHead[c];
-    while (_currentNode != NULL) {
-      Wave _wavePtr = _currentNode->waveRef;
-
-      _currentNode = _currentNode->next;
-
-      // remove this node and store necassary information in temporary buffers
-      if (_wavePtr->getAmplitude() == 0 || (_wavePtr->getFrequency() == 0 && _wavePtr->getPhase() == 0)) {
-        _tempWavePtr[_tempWavePtrCount] = _wavePtr;
-        _tempWaveIsDynamic[_tempWavePtrCount++] = removeWaveNode(_wavePtr);
-      }
-    }
+  // copy wave pointers for waves that need to be synthesized from StaticWaveList to generateAudioWaveList
+  WaveNode* _currentNode = globalWaveList;
+  while (_currentNode != NULL) {
+    Wave _wavePtr = _currentNode->waveRef;
+    _currentNode = _currentNode->next;
+    if (_wavePtr->getAmplitude() == 0 || (_wavePtr->getFrequency() == 0 && _wavePtr->getPhase() == 0)) continue;
+    pushWaveNode(_wavePtr, generateAudioWaveList[_wavePtr->getChannel()]);
   }
 
   // calculate values for audio output buffer
@@ -122,8 +110,8 @@ void ClassAudioLab::generateAudio() {
   generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_IN_BUFFER_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
   staticTimeIdx = int(staticTimeIdx - AUD_IN_BUFFER_SIZE + SAMPLE_RATE) % int(SAMPLE_RATE);
 
-  // push temporarily removed waves back onto wave list
-  for (int i = 0; i < _tempWavePtrCount; i++) {
-    pushWaveNode(_tempWavePtr[i], _tempWaveIsDynamic[i]);
+  // free generateAudioWaveList
+  for (int c = 0; c < NUM_OUT_CH; c++) {
+    freeWaveList(generateAudioWaveList[c]);
   }
 }
