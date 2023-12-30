@@ -7,7 +7,14 @@ const float INVERSE_SAMPLE_RATE = 1.0 / SAMPLE_RATE;
 const int NYQUIST = int(SAMPLE_RATE) >> 1;
 const int WAVE_OFFSET = NYQUIST >> 1;
 
-// ClassWave constructor
+const char* getWaveName(int id) {
+  static const char* const names[] = {
+    "SINE", "COSINE", "SQUARE", "SAWTOOTH", "TRIANGLE"
+  };
+  return (id < (sizeof(names) / sizeof(names[0])) ? names[id] : "");
+}
+
+// ClassWave default constructor
 ClassWave::ClassWave(void) {
   this->frequency = 0;
   this->amplitude = 0;
@@ -16,6 +23,7 @@ ClassWave::ClassWave(void) {
   //Serial.println("WAVE ADDED");
 }
 
+// ClassWave constructor
 ClassWave::ClassWave(int aChannel) {
   this->frequency = 0;
   this->amplitude = 0;
@@ -24,6 +32,7 @@ ClassWave::ClassWave(int aChannel) {
   //Serial.println("WAVE ADDED");
 }
 
+// ClassWave constructor
 ClassWave::ClassWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) {
   this->frequency = aFrequency;
   this->amplitude = anAmplitude;
@@ -60,6 +69,8 @@ int ClassWave::getAmplitude(void) { return this->amplitude; }
 int ClassWave::getPhase(void) { return this->phase; }
 uint8_t ClassWave::getChannel(void) { return this->channel; }
 
+WaveType ClassWave::getWaveType(void) { return this->waveType; }
+
 // calculate values for a 1Hz sine wave sampled at SAMPLE_RATE
 void ClassWave::calculateSineWave(void) {
   if (StaticSineWaveInitialzed) return;
@@ -69,11 +80,12 @@ void ClassWave::calculateSineWave(void) {
     StaticSineWave[x] = sin(float(_resolution * x));
   }
 }
-
 // float ClassWave::getTimeValue(int aTimeIdx, int anOffset) {
 //   float _waveTimeValue= (aTimeIdx * frequency + phase + anOffset) * INVERSE_SAMPLE_RATE;
 //   return _waveTimeValue - floor(_waveTimeValue);
 // }
+
+Sine::Sine() { this->waveType = SINE; }
 
 float Sine::getWaveValue(int aTimeIdx) {;
   float _timeValue = (aTimeIdx * frequency + phase) * INVERSE_SAMPLE_RATE;
@@ -81,11 +93,15 @@ float Sine::getWaveValue(int aTimeIdx) {;
   return amplitude * StaticSineWave[_timeIdx];
 }
 
+Cosine::Cosine() { this->waveType = COSINE; }
+
 float Cosine::getWaveValue(int aTimeIdx) {
   float _timeValue = (aTimeIdx * frequency + phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
   int _timeIdx = (_timeValue - floor(_timeValue)) * SAMPLE_RATE;
   return amplitude * StaticSineWave[_timeIdx];
 }
+
+Square::Square() { this->waveType = SQUARE; }
 
 float Square::getWaveValue(int aTimeIdx) {
   float _timeValue = (aTimeIdx * frequency + phase) * INVERSE_SAMPLE_RATE;
@@ -94,12 +110,16 @@ float Square::getWaveValue(int aTimeIdx) {
   return -amplitude;
 }
 
+Triangle::Triangle() { this->waveType = TRIANGLE; }
+
 float Triangle::getWaveValue(int aTimeIdx) {
   float _timeValue = (aTimeIdx * frequency + phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
   float _timeIdx = _timeValue - floor(_timeValue);
   if (_timeIdx < 0.5) return -amplitude + (amplitude << 2) * _timeIdx;
   return amplitude - (amplitude << 2) * (_timeIdx - 0.5);
 }
+
+Sawtooth::Sawtooth() { this->waveType = SAWTOOTH; }
 
 float Sawtooth::getWaveValue(int aTimeIdx) {
   float _timeValue = (aTimeIdx * frequency + phase + NYQUIST) * INVERSE_SAMPLE_RATE;

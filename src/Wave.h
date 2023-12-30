@@ -10,6 +10,8 @@ enum WaveType
   TRIANGLE
 };
 
+const char* getWaveName(int id);
+
 class ClassWave
 {
   protected:
@@ -18,6 +20,7 @@ class ClassWave
     int amplitude;
     int phase;
     uint8_t channel;
+    WaveType waveType;
   
   public:
 
@@ -40,6 +43,8 @@ class ClassWave
     int getPhase();
     uint8_t getChannel();
 
+    WaveType getWaveType();
+
     //inline float getTimeValue(int aTimeIdx, int anOffset = 0);
 
     virtual float getWaveValue(int aTimeIdx) = 0;
@@ -51,30 +56,35 @@ class ClassWave
 class Sine: public ClassWave
 {
   public:
+    Sine();
     float getWaveValue(int aTimeIdx);
 };
 
 class Cosine: public ClassWave
 {
   public:
+    Cosine();
     float getWaveValue(int aTimeIdx);
 };
 
 class Square: public ClassWave
 {
   public:
+    Square();
     float getWaveValue(int aTimeIdx);
 };
 
 class Sawtooth: public ClassWave
 {
   public:
+    Sawtooth();
     float getWaveValue(int aTimeIdx);
 };
 
 class Triangle: public ClassWave
 {
   public:
+    Triangle();
     float getWaveValue(int aTimeIdx);
 };
 

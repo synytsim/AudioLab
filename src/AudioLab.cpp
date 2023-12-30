@@ -15,10 +15,12 @@ ClassAudioLab &AudioLab = ClassAudioLab::getInstance();
 void ClassAudioLab::init() {
 
   delay(3000);
-  pinMode(AUD_OUT_PIN1, OUTPUT);
-  pinMode(AUD_OUT_PIN2, OUTPUT);
+  pinMode(OUT_PIN_CH1, OUTPUT);
+  pinMode(OUT_PIN_CH2, OUTPUT);
+
   adc1_config_width(ADC_WIDTH_12Bit);
-  adc1_config_channel_atten(ADC1_CHANNEL_6, ADC_ATTEN_11db);
+  adc1_config_channel_atten(IN_PIN_CH1, ADC_ATTEN_11db);
+  adc1_config_channel_atten(IN_PIN_CH2, ADC_ATTEN_11db);
 
   float _sampleDelay = 1000000 / SAMPLE_RATE;
   Serial.printf("SAMPLE RATE: %d Hz    WINDOW SIZE: %d    SPEED : %.1f Hz    TIME PER WINDOW: %.1f ms", SAMPLE_RATE, WINDOW_SIZE, float(SAMPLE_RATE) / WINDOW_SIZE,  _sampleDelay * WINDOW_SIZE * 0.001);
@@ -26,7 +28,10 @@ void ClassAudioLab::init() {
 
   delay(1000);
   initISR();
+
   Serial.println("AudioLab setup complete");
+  
+  resumeSampling();
 }
 
 // reset AudioLab, may be useful in certain events
@@ -34,25 +39,30 @@ void ClassAudioLab::reset() {
   return;
 }
 
-// returns true when new waves can be synthesized
-bool ClassAudioLab::ready() {
-  return AUD_IN_BUFFER_FULL();
-}
+// returns true when input buffer fills and signal synthesis should occur. If a buffer is passed, then values from mono input buffer are stored to passed buffer.
+bool ClassAudioLab::ready(int* aBuffer) {
+  if (!AUD_IN_BUFFER_FULL()) return false;
 
-// continue audio sampling, this should be called when ready() returns true
-void ClassAudioLab::flush() {
+  // if aBuffer was passed, store samples from volatile input buffer to passed buffer
+  if (aBuffer != NULL) {
+    for (int c = 0; c < NUM_IN_CH; c++) {
+      int j = c * WINDOW_SIZE;
+      for (int i = 0; i < WINDOW_SIZE; i++) {
+        aBuffer[j + i] = AUD_IN_BUFFER[c][i];
+      }
+    }
+  }
+
+  // resume audio sampling
   SYNC_AUD_IN_OUT_IDX();
+  
+  // remove dynamic waves
   removeDynamicWaves();
+
+  return true;
 }
 
 // synthesize a window of audio, this should be called after flush() and after any processing is done
 void ClassAudioLab::synthesize() {
   generateAudio();
-}
-
-// pull samples from audio input buffer into outputBuffer, this should be called after ready() but before flush()
-void ClassAudioLab::pullSamples(int* aBuffer) {
-    for (int i = 0; i < WINDOW_SIZE; i++) {
-        aBuffer[i] = AUD_IN_BUFFER[i];
-    }
 }

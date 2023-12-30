@@ -13,7 +13,7 @@ int staticTimeIdx = 0;
 void ClassAudioLab::resetGenerateAudio() {
   // restore scratch pad buffer values
   for (int c = 0; c < NUM_OUT_CH; c++) {
-    generateAudioWaveList[NUM_OUT_CH] = NULL;
+    freeWaveList(generateAudioWaveList[c]);
     for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
       generateAudioBuffer[c][i] = 0.0;
     }

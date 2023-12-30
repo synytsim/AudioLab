@@ -10,11 +10,15 @@
 
 #define SAMPLE_RATE 8192
 
+#define NUM_IN_CH 1
+
+#define IN_PIN_CH1 ADC1_CHANNEL_6
+#define IN_PIN_CH2 ADC1_CHANNEL_3
+
 #define NUM_OUT_CH 2 
 
-#define AUD_IN_PIN ADC1_CHANNEL_6
-#define AUD_OUT_PIN1 A0
-#define AUD_OUT_PIN2 A1
+#define OUT_PIN_CH1 A0
+#define OUT_PIN_CH2 A1
 
 #include "Wave.h"
 
@@ -92,7 +96,7 @@ class ClassAudioLab
     static float windowingCosWave[AUD_OUT_BUFFER_SIZE];
 
     // input and output buffers
-    volatile static int AUD_IN_BUFFER[AUD_IN_BUFFER_SIZE];
+    volatile static int AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
     volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
 
     // function that gets called when timer is triggered
@@ -118,23 +122,28 @@ class ClassAudioLab
     // reset AudioLab
     void reset();
 
-    // returns true when signal synthesis should occur and/or input buffer fills
-    bool ready();
-
-    // restores/synchronizes input/output indexes, and clears dynamic waves
-    void flush();
-
-    // pulls samples from input buffer into a buffer
-    void pullSamples(int* aBuffer);
+    // returns true when input buffer fills and signal synthesis should occur. If a buffer is passed, then values from input buffer are stored to passed buffer
+    bool ready(int* aBuffer = NULL);
 
     // synthesizes one window of signal
     void synthesize();
+
+    void printWaves();
 
     // returns a "static" pointer to a wave of specified type (this wave exists throughout runtime of whole program)
     Wave staticWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0,  WaveType aWaveType = SINE);
 
     // returns a "dynamic" pointer to a wave of specified type (this wave only exists within the scope of ready())
     Wave dynamicWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0,  WaveType aWaveType = SINE);
+    
+    // changes wave type of an existing wave
+    void changeWaveType(Wave& aWave, WaveType aWaveType);
+
+    // pause sampling signal
+    void pauseSampling();
+
+    // resume sampling signal
+    void resumeSampling();
 
 };
 
