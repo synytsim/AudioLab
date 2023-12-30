@@ -10,7 +10,7 @@ enum WaveType
   TRIANGLE
 };
 
-const char* getWaveName(int id);
+const char* getWaveName(WaveType aWaveType);
 
 class ClassWave
 {
@@ -38,16 +38,16 @@ class ClassWave
     void setPhase(int aPhase);
     void setChannel(uint8_t aChannel);
 
-    int getFrequency();
-    int getAmplitude();
-    int getPhase();
-    uint8_t getChannel();
+    int getFrequency() const;
+    int getAmplitude() const;
+    int getPhase() const;
+    uint8_t getChannel() const;
 
-    WaveType getWaveType();
+    WaveType getWaveType() const;
 
     //inline float getTimeValue(int aTimeIdx, int anOffset = 0);
 
-    virtual float getWaveValue(int aTimeIdx) = 0;
+    virtual float getWaveValue(int aTimeIdx) const = 0;
 
     static void calculateSineWave();
 
@@ -57,35 +57,35 @@ class Sine: public ClassWave
 {
   public:
     Sine();
-    float getWaveValue(int aTimeIdx);
+    float getWaveValue(int aTimeIdx) const;
 };
 
 class Cosine: public ClassWave
 {
   public:
     Cosine();
-    float getWaveValue(int aTimeIdx);
+    float getWaveValue(int aTimeIdx) const;
 };
 
 class Square: public ClassWave
 {
   public:
     Square();
-    float getWaveValue(int aTimeIdx);
+    float getWaveValue(int aTimeIdx) const;
 };
 
 class Sawtooth: public ClassWave
 {
   public:
     Sawtooth();
-    float getWaveValue(int aTimeIdx);
+    float getWaveValue(int aTimeIdx) const;
 };
 
 class Triangle: public ClassWave
 {
   public:
     Triangle();
-    float getWaveValue(int aTimeIdx);
+    float getWaveValue(int aTimeIdx) const;
 };
 
 #endif
