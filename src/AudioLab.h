@@ -1,25 +1,7 @@
 #ifndef AudioLab_h
 #define AudioLab_h
 
-#include <Arduino.h>
-#include <driver/dac.h>
-#include <driver/adc.h>
-#include <math.h>
-
-#define WINDOW_SIZE 256
-
-#define SAMPLE_RATE 8192
-
-#define NUM_IN_CH 1
-
-#define IN_PIN_CH1 ADC1_CHANNEL_6
-#define IN_PIN_CH2 ADC1_CHANNEL_3
-
-#define NUM_OUT_CH 2 
-
-#define OUT_PIN_CH1 A0
-#define OUT_PIN_CH2 A1
-
+#include "AudioLabSettings.h"
 #include "Wave.h"
 
 typedef ClassWave* Wave;
@@ -35,6 +17,9 @@ class ClassAudioLab
 
     // initialize timer interrupt
     void initISR();
+
+    // configure input and output pins
+    void configurePins();
 
     // initializes wave list head pointer
     void initWaveList();
@@ -96,6 +81,8 @@ class ClassAudioLab
     static float windowingCosWave[AUD_OUT_BUFFER_SIZE];
 
     // input and output buffers
+    static int inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
+
     volatile static int AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
     volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
 
@@ -113,36 +100,93 @@ class ClassAudioLab
     ClassAudioLab(const ClassAudioLab &) = delete;
     ClassAudioLab &operator=(const ClassAudioLab &) = delete;
 
-    // returns instance of AudioLab
+    // returns singleton instance of AudioLab
     static ClassAudioLab &getInstance();
 
-    // initialize AudioLab
+    /**
+     * Initalize AudioLab, configure pins and timer
+     */
     void init();
 
-    // reset AudioLab
-    void reset();
+    // reset AudioLab (WIP)
+    // void reset();
 
-    // returns true when input buffer fills and signal synthesis should occur. If a buffer is passed, then values from input buffer are stored to passed buffer
-    bool ready(int* aBuffer = NULL);
+    /**
+     * Returns true when input buffer fills and synthesis should occur
+     *
+     * @return true if AudioLab is ready for synthesis, otherwise false
+     *
+     */
+    bool ready();
 
-    // synthesizes one window of signal
+    /**
+     * Fills output buffer with synthesized signal composed of assigned waves
+     *
+     * @note This function MUST be called in the "if (AudioLab.ready())" block
+     */
     void synthesize();
 
-    void printWaves();
-
-    // returns a "static" pointer to a wave of specified type (this wave exists throughout runtime of whole program)
+    /**
+     * Create a 'static' wave object and returns a pointer to the object
+     *
+     * @param aChannel channel of the wave, must be between [0..NUM_OUT_CH)
+     * @param aFrequency frequency of the wave, must be positive
+     * @param anAmplitude amplitude of the wave
+     * @param aPhase phase of the wave, must be psotive
+     * @param aWaveType the type of wave, defaults to SINE if not specified
+     *
+     * @return a pointer to Wave object or NULL if error
+     *
+     * @note static waves exist throughout runtime of program
+     */
     Wave staticWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0,  WaveType aWaveType = SINE);
 
-    // returns a "dynamic" pointer to a wave of specified type (this wave only exists within the scope of ready())
+    /**
+     * Create a 'dynamic' wave object and returns a pointer to the object
+     *
+     * @param aChannel channel of the wave, must be between [0..NUM_OUT_CH)
+     * @param aFrequency frequency of the wave, must be positive
+     * @param anAmplitude amplitude of the wave
+     * @param aPhase phase of the wave, must be psotive
+     * @param aWaveType the type of wave, defaults to SINE if not specified
+     *
+     * @return a pointer to Wave object or NULL if error
+     *
+     * @note dynamic waves only exist within the scope of "if (AudioLab.ready())" block
+     */
     Wave dynamicWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0,  WaveType aWaveType = SINE);
     
-    // changes wave type of an existing wave
+    /**
+     * Change the wave type of an existing wave
+     *
+     * @param aWave reference to an existing Wave
+     * @param aWaveType the type of wave to change to
+     */
     void changeWaveType(Wave& aWave, WaveType aWaveType);
 
-    // pause sampling signal
+    /**
+     * Get pointer to input buffer
+     *
+     * @param aChannel input buffer channel between [0..NUM_IN_CH), default is 0
+     *
+     * @return read-only pointer to input buffer or NULL if NUM_IN_CH == 0
+     */
+    const int* getInputBuffer(uint8_t aChannel = 0);
+
+    /**
+     * Prints the waves that will be synthesized to Serial in format (WaveType, Frequency, Amplitude, Phase)
+     *
+     */
+    void printWaves();
+
+    /**
+     * pauses input and output sampling by disabled timer interrupt
+     */
     void pauseSampling();
 
-    // resume sampling signal
+    /**
+     * resumes input and output sampling by enabling timer interrupt
+     */
     void resumeSampling();
 
 };

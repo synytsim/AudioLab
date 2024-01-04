@@ -16,7 +16,7 @@ To use this library in Arduino add this line to your sketch
 
 * **void AudioLab.init**(void) - initialize AudioLab, call once in Arduino IDE `void setup()`
 
-* **bool AudioLab.ready**(int* aBuffer = NULL) - returns true when synthesis function should be called, optionally samples from input buffer can be stored to a buffer in the sketch. Call this function continuously in Arduino IDE `void loop()` with `if (AudioLab.ready())`
+* **bool AudioLab.ready**(void) - returns true when synthesis function should be called. Call this function continuously in Arduino IDE `void loop()` with `if (AudioLab.ready())`
 
 * **void AudioLab.synthesize**(void) - synthesize signal for audio output, this function should be called once in `if (AudioLab.ready())` block (after waves are assigned)
 
@@ -26,8 +26,10 @@ To use this library in Arduino add this line to your sketch
 
 * **void AudioLab.changeWaveType**(Wave& aWave, WaveType aWaveType) - change the wave type of an existing wave
 
+* **const int* getInputBuffer**(uint8_t aChannel = 0) - returns pointer to input buffer
+
 * **void AudioLab.printWaves**(void) - prints information about waves that will be synthesized
 
-* **void AudioLab.pauseSampling**(void) - disables alarm of ISR timer used for sampling until `resumeSampling()` is called
+* **void AudioLab.pauseSampling**(void) - disables alarm of timer used for sampling until `resumeSampling()` is called
 
-* **void AudioLab.resumeSampling**(void) - enables alarm of ISR timer used for sampling
+* **void AudioLab.resumeSampling**(void) - enables alarm of timer used for sampling

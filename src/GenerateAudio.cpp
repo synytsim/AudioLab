@@ -9,7 +9,6 @@ int generateAudioBufferIdx = 0;
 int generateAudioOutBufferIdx = 0;
 int staticTimeIdx = 0; 
 
-// reset generate audio, this is only called during certain events such as init() and reset()
 void ClassAudioLab::resetGenerateAudio() {
   // restore scratch pad buffer values
   for (int c = 0; c < NUM_OUT_CH; c++) {
@@ -24,7 +23,6 @@ void ClassAudioLab::resetGenerateAudio() {
   generateAudioOutBufferIdx = 0;
 }
 
-// initialize audio
 void ClassAudioLab::initAudio() {
   // calculate cosine wave for windowing
   calculateWindowingWave();
@@ -37,7 +35,6 @@ void ClassAudioLab::initAudio() {
   ClassWave::calculateSineWave();
 }
 
-// calculates values for windowing wave
 void ClassAudioLab::calculateWindowingWave(void) {
   float _resolution = float(2.0 * PI / AUD_OUT_BUFFER_SIZE);
   for (int x = 0; x < AUD_OUT_BUFFER_SIZE; x++) {
@@ -45,7 +42,6 @@ void ClassAudioLab::calculateWindowingWave(void) {
   }
 }
 
-// returns the sum of waves of a channel
 float ClassAudioLab::getSumOfChannel(uint8_t aChannel) {
   float _sum = 0.0;
   // iterate through waves in a channel and get the total sum of the waves
@@ -59,9 +55,7 @@ float ClassAudioLab::getSumOfChannel(uint8_t aChannel) {
   return _sum;
 }
 
-// synthesizes one window of values for audio output
 void ClassAudioLab::generateAudio() {
-
   // copy wave pointers for waves that need to be synthesized from StaticWaveList to generateAudioWaveList
   WaveNode* _currentNode = globalWaveList;
   while (_currentNode != NULL) {

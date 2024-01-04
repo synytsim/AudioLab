@@ -1,4 +1,6 @@
 #include "AudioLab.h"
+#include <driver/dac.h>
+#include <driver/adc.h>
 
 volatile int ClassAudioLab::AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
 volatile int ClassAudioLab::AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
@@ -6,8 +8,16 @@ volatile int ClassAudioLab::AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
 volatile int AUD_IN_BUFFER_IDX = 0;
 volatile int AUD_OUT_BUFFER_POS = 0;
 
-// reset audio input, output buffers and indexes
-void ClassAudioLab::resetAudInOut() {
+void ClassAudioLab::configurePins(void) {
+  pinMode(OUT_PIN_CH1, OUTPUT);
+  pinMode(OUT_PIN_CH2, OUTPUT);
+
+  adc1_config_width(ADC_WIDTH_12Bit);
+  adc1_config_channel_atten(IN_PIN_CH1, ADC_ATTEN_11db);
+  adc1_config_channel_atten(IN_PIN_CH2, ADC_ATTEN_11db);
+}
+
+void ClassAudioLab::resetAudInOut(void) {
   for (int i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
     for (int c = 0; c < NUM_OUT_CH; c++) {
       AUD_OUT_BUFFER[c][i] = 128;
@@ -23,8 +33,7 @@ void ClassAudioLab::resetAudInOut() {
   AUD_OUT_BUFFER_POS = 0;
 }
 
-// audio output and input
-void IRAM_ATTR ClassAudioLab::AUD_IN_OUT() {
+void IRAM_ATTR ClassAudioLab::AUD_IN_OUT(void) {
   if (AUD_IN_BUFFER_FULL()) return;
 
   int AUD_OUT_BUFFER_IDX = AUD_OUT_BUFFER_POS + AUD_IN_BUFFER_IDX;
@@ -45,13 +54,11 @@ void IRAM_ATTR ClassAudioLab::AUD_IN_OUT() {
   AUD_IN_BUFFER_IDX += 1;
 }
 
-// returns true when audio input buffer is full
-bool IRAM_ATTR ClassAudioLab::AUD_IN_BUFFER_FULL() {
+bool IRAM_ATTR ClassAudioLab::AUD_IN_BUFFER_FULL(void) {
   return !(AUD_IN_BUFFER_IDX < WINDOW_SIZE);
 }
 
-// synchronizes audio output buffer position and reset audio input buffer index
-void ClassAudioLab::SYNC_AUD_IN_OUT_IDX() {
+void ClassAudioLab::SYNC_AUD_IN_OUT_IDX(void) {
   AUD_OUT_BUFFER_POS += AUD_IN_BUFFER_SIZE;
   if (AUD_OUT_BUFFER_POS >= AUD_OUT_BUFFER_SIZE) AUD_OUT_BUFFER_POS = 0;
   AUD_IN_BUFFER_IDX = 0;

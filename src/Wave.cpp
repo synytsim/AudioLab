@@ -1,4 +1,4 @@
-#include "AudioLab.h"
+#include "Wave.h"
 
 float StaticSineWave[SAMPLE_RATE];
 bool StaticSineWaveInitialzed = 0;
@@ -14,7 +14,6 @@ const char* getWaveName(WaveType aWaveType) {
   return names[aWaveType];
 }
 
-// ClassWave default constructor
 ClassWave::ClassWave(void) {
   this->frequency = 0;
   this->amplitude = 0;
@@ -23,25 +22,6 @@ ClassWave::ClassWave(void) {
   //Serial.println("WAVE ADDED");
 }
 
-// ClassWave constructor
-ClassWave::ClassWave(int aChannel) {
-  this->frequency = 0;
-  this->amplitude = 0;
-  this->phase = 0;
-  this->channel = aChannel;
-  //Serial.println("WAVE ADDED");
-}
-
-// ClassWave constructor
-ClassWave::ClassWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) {
-  this->frequency = aFrequency;
-  this->amplitude = anAmplitude;
-  this->phase = aPhase;
-  this->channel = aChannel;
-  //Serial.println("WAVE ADDED");
-}
-
-// ClassWave destructor
 ClassWave::~ClassWave(void) {
   //Serial.println("WAVE REMOVED");
 }
@@ -59,10 +39,34 @@ void ClassWave::reset() {
   this->phase = 0;
 }
 
-void ClassWave::setFrequency(int aFrequency) { this->frequency = aFrequency; }
+bool ClassWave::setFrequency(int aFrequency) { 
+  if (!(aFrequency >= 0)) {
+    Serial.println("FREQUENCY MUST BE POSITIVE!");
+    return 1;
+  }
+  this->frequency = aFrequency; 
+  return 0;
+}
+
 void ClassWave::setAmplitude(int anAmplitude) { this->amplitude = anAmplitude; }
-void ClassWave::setPhase(int aPhase) { this->phase = aPhase; }
-void ClassWave::setChannel(uint8_t aChannel)  { this->channel = aChannel; }
+
+bool ClassWave::setPhase(int aPhase) {
+  if (!(aPhase >= 0)) {
+    Serial.println("PHASE MUST BE POSITIVE!");
+    return 1;
+  }
+  this->phase = aPhase;
+  return 0;
+}
+
+bool ClassWave::setChannel(uint8_t aChannel)  {
+  if (!(aChannel >= 0 && aChannel < NUM_OUT_CH)) {
+    Serial.printf("CANNOT SET CHANNEL %d! USE RANGE BETWEEN [0..NUM_OUT_CH)\r\n", aChannel);
+    return 1;
+  }
+  this->channel = aChannel;
+  return 0;
+}
 
 int ClassWave::getFrequency(void) const { return this->frequency; }
 int ClassWave::getAmplitude(void) const { return this->amplitude; }
@@ -71,7 +75,6 @@ uint8_t ClassWave::getChannel(void) const { return this->channel; }
 
 WaveType ClassWave::getWaveType(void) const { return this->waveType; }
 
-// calculate values for a 1Hz sine wave sampled at SAMPLE_RATE
 void ClassWave::calculateSineWave(void) {
   if (StaticSineWaveInitialzed) return;
   StaticSineWaveInitialzed = 1;
@@ -80,6 +83,7 @@ void ClassWave::calculateSineWave(void) {
     StaticSineWave[x] = sin(float(_resolution * x));
   }
 }
+
 // float ClassWave::getTimeValue(int aTimeIdx, int anOffset) {
 //   float _waveTimeValue= (aTimeIdx * frequency + phase + anOffset) * INVERSE_SAMPLE_RATE;
 //   return _waveTimeValue - floor(_waveTimeValue);

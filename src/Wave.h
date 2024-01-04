@@ -1,6 +1,10 @@
 #ifndef Wave_h
 #define Wave_h
 
+#include <Arduino.h>
+#include <math.h>
+#include "AudioLabSettings.h"
+
 enum WaveType
 {
   SINE,
@@ -12,6 +16,7 @@ enum WaveType
 
 const char* getWaveName(WaveType aWaveType);
 
+// abstract base class for wave
 class ClassWave
 {
   protected:
@@ -21,22 +26,23 @@ class ClassWave
     int phase;
     uint8_t channel;
     WaveType waveType;
+
+  private:
+    // static inline float getTimeValue(int aTimeIdx, int anOffset = 0);
   
   public:
 
     ClassWave();
-    ClassWave(int channel); 
-    ClassWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0);
 
     ~ClassWave();  
 
     void set(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0);
     void reset();
 
-    void setFrequency(int aFrequency);
+    bool setFrequency(int aFrequency);
     void setAmplitude(int anAmplitude);
-    void setPhase(int aPhase);
-    void setChannel(uint8_t aChannel);
+    bool setPhase(int aPhase);
+    bool setChannel(uint8_t aChannel);
 
     int getFrequency() const;
     int getAmplitude() const;
@@ -45,10 +51,9 @@ class ClassWave
 
     WaveType getWaveType() const;
 
-    //inline float getTimeValue(int aTimeIdx, int anOffset = 0);
-
     virtual float getWaveValue(int aTimeIdx) const = 0;
 
+    // calculate values for a 1Hz sine wave sampled at SAMPLE_RATE
     static void calculateSineWave();
 
 };
