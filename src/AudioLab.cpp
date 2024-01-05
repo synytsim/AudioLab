@@ -43,7 +43,7 @@ bool ClassAudioLab::ready(void) {
     }
   }
 
-  // resume audio sampling
+  // reset/synchronize input and output indexes to continue sampling
   SYNC_AUD_IN_OUT_IDX();
   
   // remove dynamic waves
@@ -64,13 +64,17 @@ Wave ClassAudioLab::getNewWave(uint8_t aChannel, int aFrequency, int anAmplitude
   else if (aWaveType == SAWTOOTH) _newWave = new Sawtooth;
   else if (aWaveType == TRIANGLE) _newWave = new Triangle;
 
-  int error = 0;
-  error += _newWave->setChannel(aChannel);
-  error += _newWave->setFrequency(aFrequency);
-  _newWave->setAmplitude(anAmplitude);
-  error += _newWave->setPhase(aPhase);
+  bool _error = 0;
+  if (!((aChannel >= 0 && aChannel < NUM_OUT_CH) && aFrequency >= 0 && aPhase >= 0)) {
+    _error = 1;
+  }
 
-  if (error > 0) {
+  _newWave->setChannel(aChannel);
+  _newWave->setFrequency(aFrequency);
+  _newWave->setAmplitude(anAmplitude);
+  _newWave->setPhase(aPhase);
+
+  if (_error) {
     delete _newWave;
     _newWave = NULL;
   }
@@ -78,15 +82,25 @@ Wave ClassAudioLab::getNewWave(uint8_t aChannel, int aFrequency, int anAmplitude
   return _newWave;
 }
 
+Wave ClassAudioLab::staticWave(WaveType aWaveType) { return staticWave(0, 0, 0, 0, aWaveType); }
+
+Wave ClassAudioLab::staticWave(uint8_t aChannel, WaveType aWaveType) { return staticWave(aChannel, 0, 0, 0, aWaveType); }
+
 Wave ClassAudioLab::staticWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
   Wave _newWave = getNewWave(aChannel, aFrequency, anAmplitude, aPhase, aWaveType);
   if (_newWave != NULL) pushWaveNode(_newWave, globalWaveList, 0);
+  else Serial.println("CREATE STATIC WAVE FAILED DUE TO INVALID PARAMETERS!");
   return _newWave;
 }
+
+Wave ClassAudioLab::dynamicWave(WaveType aWaveType) { return dynamicWave(0, 0, 0, 0, aWaveType); }
+
+Wave ClassAudioLab::dynamicWave(uint8_t aChannel, WaveType aWaveType) { return dynamicWave(aChannel, 0, 0, 0, aWaveType); }
 
 Wave ClassAudioLab::dynamicWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
   Wave _newWave = getNewWave(aChannel, aFrequency, anAmplitude, aPhase, aWaveType);
   if (_newWave != NULL) pushWaveNode(_newWave, globalWaveList, 1);
+  else Serial.println("CREATE DYNAMIC WAVE FAILED DUE TO INVALID PARAMETERS!");
   return _newWave;
 }
 
@@ -105,7 +119,7 @@ void ClassAudioLab::changeWaveType(Wave& aWave, WaveType aWaveType) {
 
   // if wave was not found, print message and return
   if (_waveExists == 0) {
-    Serial.printf("CANNOT CHANGE WAVE TYPE, WAVE AT ADDRESS 0x%02x DOES NOT EXIST IN GLOBAL WAVE LIST\r\n", aWave);
+    Serial.printf("CANNOT CHANGE WAVE TYPE! WAVE AT ADDRESS 0x%02x DOES NOT EXIST IN GLOBAL WAVE LIST\r\n", aWave);
     return;
   }
   // if aWave type is the same as aWaveType return

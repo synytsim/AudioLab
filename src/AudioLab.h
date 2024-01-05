@@ -129,32 +129,36 @@ class ClassAudioLab
     /**
      * Create a 'static' wave object and returns a pointer to the object
      *
-     * @param aChannel channel of the wave, must be between [0..NUM_OUT_CH)
-     * @param aFrequency frequency of the wave, must be positive
-     * @param anAmplitude amplitude of the wave
-     * @param aPhase phase of the wave, must be psotive
-     * @param aWaveType the type of wave, defaults to SINE if not specified
+     * @param aChannel channel of the wave, must be between [0..NUM_OUT_CH), default 0
+     * @param aFrequency frequency of the wave, must be positive, default 0
+     * @param anAmplitude amplitude of the wave, default 0
+     * @param aPhase phase of the wave, must be positive, default 0
+     * @param aWaveType the type of wave, default SINE
      *
      * @return a pointer to Wave object or NULL if error
      *
      * @note static waves exist throughout runtime of program
      */
-    Wave staticWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0,  WaveType aWaveType = SINE);
+    Wave staticWave(WaveType aWaveType = SINE);
+    Wave staticWave(uint8_t aChannel, WaveType aWaveType = SINE);
+    Wave staticWave(uint8_t aChannel, int aFrequency = 0, int anAmplitude = 0, int aPhase = 0,  WaveType aWaveType = SINE);
 
     /**
      * Create a 'dynamic' wave object and returns a pointer to the object
      *
-     * @param aChannel channel of the wave, must be between [0..NUM_OUT_CH)
-     * @param aFrequency frequency of the wave, must be positive
-     * @param anAmplitude amplitude of the wave
-     * @param aPhase phase of the wave, must be psotive
-     * @param aWaveType the type of wave, defaults to SINE if not specified
+     * @param aChannel channel of the wave, must be between [0..NUM_OUT_CH), default 0
+     * @param aFrequency frequency of the wave, must be positive, default 0
+     * @param anAmplitude amplitude of the wave, default 0
+     * @param aPhase phase of the wave, must be positive, default 0
+     * @param aWaveType the type of wave, default SINE
      *
      * @return a pointer to Wave object or NULL if error
      *
      * @note dynamic waves only exist within the scope of "if (AudioLab.ready())" block
      */
-    Wave dynamicWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0,  WaveType aWaveType = SINE);
+    Wave dynamicWave(WaveType aWaveType = SINE);
+    Wave dynamicWave(uint8_t aChannel, WaveType aWaveType = SINE);
+    Wave dynamicWave(uint8_t aChannel, int aFrequency = 0, int anAmplitude = 0, int aPhase = 0,  WaveType aWaveType = SINE);
     
     /**
      * Change the wave type of an existing wave

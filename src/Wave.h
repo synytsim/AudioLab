@@ -39,10 +39,10 @@ class ClassWave
     void set(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0);
     void reset();
 
-    bool setFrequency(int aFrequency);
+    void setFrequency(int aFrequency);
     void setAmplitude(int anAmplitude);
-    bool setPhase(int aPhase);
-    bool setChannel(uint8_t aChannel);
+    void setPhase(int aPhase);
+    void setChannel(uint8_t aChannel);
 
     int getFrequency() const;
     int getAmplitude() const;
@@ -51,6 +51,7 @@ class ClassWave
 
     WaveType getWaveType() const;
 
+    // pure virtual function for getting the value associated with the wave
     virtual float getWaveValue(int aTimeIdx) const = 0;
 
     // calculate values for a 1Hz sine wave sampled at SAMPLE_RATE

@@ -39,33 +39,30 @@ void ClassWave::reset() {
   this->phase = 0;
 }
 
-bool ClassWave::setFrequency(int aFrequency) { 
+void ClassWave::setFrequency(int aFrequency) { 
   if (!(aFrequency >= 0)) {
     Serial.println("FREQUENCY MUST BE POSITIVE!");
-    return 1;
+    return;
   }
   this->frequency = aFrequency; 
-  return 0;
 }
 
 void ClassWave::setAmplitude(int anAmplitude) { this->amplitude = anAmplitude; }
 
-bool ClassWave::setPhase(int aPhase) {
+void ClassWave::setPhase(int aPhase) {
   if (!(aPhase >= 0)) {
     Serial.println("PHASE MUST BE POSITIVE!");
-    return 1;
+    return;
   }
   this->phase = aPhase;
-  return 0;
 }
 
-bool ClassWave::setChannel(uint8_t aChannel)  {
+void ClassWave::setChannel(uint8_t aChannel)  {
   if (!(aChannel >= 0 && aChannel < NUM_OUT_CH)) {
     Serial.printf("CANNOT SET CHANNEL %d! USE RANGE BETWEEN [0..NUM_OUT_CH)\r\n", aChannel);
-    return 1;
+    return;
   }
   this->channel = aChannel;
-  return 0;
 }
 
 int ClassWave::getFrequency(void) const { return this->frequency; }
