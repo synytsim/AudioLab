@@ -40,7 +40,7 @@ AudioLab is a singleton instance of ClassAudioLab
 
 ### Wave
 
-Wave is a pointer to a derived object of base ClassWave, to create a valid pointer use `Wave {Name} = AudioLab.staticWave()`
+Wave is a pointer to a derived object of base ClassWave, to create a valid pointer use `Wave {Name} = AudioLab.staticWave()` or `Wave {Name} = AudioLab.dynamicWave()`
 
 **Wave->set**(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) - set wave's parameters
 
