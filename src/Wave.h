@@ -36,7 +36,7 @@ class ClassWave
 
     ~ClassWave();  
 
-    void set(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase = 0);
+    void set(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase);
     void reset();
 
     void setFrequency(int aFrequency);
