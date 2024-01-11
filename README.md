@@ -30,7 +30,7 @@ AudioLab is a singleton instance of ClassAudioLab
 
 * **AudioLab.changeWaveType**(Wave& aWave, WaveType aWaveType) - change the wave type of an existing wave
 
-* **const int*** **AudioLab.getInputBuffer**(uint8_t aChannel = 0) - returns ready-only pointer to input buffer on a channel
+* **const int*** **AudioLab.getInputBuffer**(uint8_t aChannel = 0) - returns read-only pointer to input buffer on a channel
 
 * **AudioLab.printWaves**(void) - prints information about waves that will be synthesized
 
@@ -40,27 +40,27 @@ AudioLab is a singleton instance of ClassAudioLab
 
 ### Wave
 
-Wave is a pointer to a derived object of base ClassWave, to create a valid pointer use `Wave {Name} = AudioLab.staticWave()` or `Wave {Name} = AudioLab.dynamicWave()`
+Wave is a pointer to a derived object of base ClassWave, to create a valid pointer use `Wave aWaveName = AudioLab.staticWave()` or `Wave aWaveName = AudioLab.dynamicWave()`
 
-**Wave->set**(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) - set wave's parameters
+**aWaveName->set**(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) - set wave's parameters
 
-**Wave->reset**(int aFrequency) - reset wave's frequency, amplitude, and phase
+**aWaveName->reset**(int aFrequency) - reset wave's frequency, amplitude, and phase
 
-**Wave->setFrequency**(int aFrequency) - set wave's frequency
+**aWaveName->setFrequency**(int aFrequency) - set wave's frequency
 
-**Wave->setAmplitude**(int anAmplitude) - set wave's amplitude
+**aWaveName->setAmplitude**(int anAmplitude) - set wave's amplitude
 
-**Wave->setPhase**(int aPhase) - set wave's phase
+**aWaveName->setPhase**(int aPhase) - set wave's phase
 
-**Wave->setChannel**(uint8_t aChannel) - set wave's channel
+**aWaveName->setChannel**(uint8_t aChannel) - set wave's channel
 
-**int Wave->getFrequency**(void) - get wave's frequency
+**int aWaveName->getFrequency**(void) - get wave's frequency
 
-**int Wave->getAmplitude**(void) - get wave's amplitude
+**int aWaveName->getAmplitude**(void) - get wave's amplitude
 
-**int Wave->getPhase**(void) - get wave's phase
+**int aWaveName->getPhase**(void) - get wave's phase
 
-**int Wave->getChannel**(void) - get wave's channel
+**int aWaveName->getChannel**(void) - get wave's channel
 
 ## Compatibility
 

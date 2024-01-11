@@ -1,9 +1,8 @@
 #ifndef AudioLabSettings_h
 #define AudioLabSettings_h
 
-#define WINDOW_SIZE 256
-
 #define SAMPLE_RATE 8192
+#define WINDOW_SIZE 256
 
 #define NUM_IN_CH 1
 

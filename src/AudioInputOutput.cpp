@@ -9,12 +9,20 @@ volatile int AUD_IN_BUFFER_IDX = 0;
 volatile int AUD_OUT_BUFFER_POS = 0;
 
 void ClassAudioLab::configurePins(void) {
+  #if NUM_OUT_CH > 0
   pinMode(OUT_PIN_CH1, OUTPUT);
+  #endif
+  #if NUM_OUT_CH > 1
   pinMode(OUT_PIN_CH2, OUTPUT);
+  #endif
 
+  #if NUM_IN_CH > 0
   adc1_config_width(ADC_WIDTH_12Bit);
   adc1_config_channel_atten(IN_PIN_CH1, ADC_ATTEN_11db);
+  #endif
+  #if NUM_IN_CH > 1
   adc1_config_channel_atten(IN_PIN_CH2, ADC_ATTEN_11db);
+  #endif
 }
 
 void ClassAudioLab::resetAudInOut(void) {
