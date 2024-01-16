@@ -175,7 +175,7 @@ class ClassAudioLab
      *
      * @return read-only pointer to input buffer or NULL if NUM_IN_CH == 0
      */
-    const int* getInputBuffer(uint8_t aChannel = 0);
+    int* getInputBuffer(uint8_t aChannel = 0);
 
     /**
      * Prints the waves that will be synthesized to Serial in format (WaveType, Frequency, Amplitude, Phase)

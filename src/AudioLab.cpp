@@ -132,7 +132,7 @@ void ClassAudioLab::changeWaveType(Wave& aWave, WaveType aWaveType) {
   aWave = _newWave;
 }
 
-const int *ClassAudioLab::getInputBuffer(uint8_t aChannel) {
+int *ClassAudioLab::getInputBuffer(uint8_t aChannel) {
   if (!(aChannel >= 0 && aChannel < NUM_IN_CH)) {
     Serial.printf("INVALID INPUT CHANNEL %d, USE RANGE BETWEEN [0..NUM_IN_CH)\r\n", aChannel);
     return NULL;

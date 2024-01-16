@@ -12,6 +12,12 @@ To use this library in Arduino add this line to your sketch
 
 `include <AudioLab.h>`
 
+The pins AudioLab uses on the Adafruit ESP32 Feather:
+* **A0** and **A1** for output
+* **A2** and **A3** for input
+
+The sample rate, window size and number of input and output channels can be modified in the **AudioLabSettings.h** file located in the **src** folder
+
 ## API
 
 ### AudioLab
@@ -30,7 +36,7 @@ AudioLab is a singleton instance of ClassAudioLab
 
 * **AudioLab.changeWaveType**(Wave& aWave, WaveType aWaveType) - change the wave type of an existing wave
 
-* **const int*** **AudioLab.getInputBuffer**(uint8_t aChannel = 0) - returns read-only pointer to input buffer on a channel
+* **int*** **AudioLab.getInputBuffer**(uint8_t aChannel = 0) - returns pointer to input buffer on a channel
 
 * **AudioLab.printWaves**(void) - prints information about waves that will be synthesized
 
