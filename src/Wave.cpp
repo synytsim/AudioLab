@@ -1,14 +1,24 @@
 #include "Wave.h"
 
+// sine wave table
 float StaticSineWave[SAMPLE_RATE];
 bool StaticSineWaveInitialzed = 0;
 
+// various constansts for wave value calculations
 const float INVERSE_SAMPLE_RATE = 1.0 / SAMPLE_RATE;
 const int NYQUIST = int(SAMPLE_RATE) >> 1;
 const int WAVE_OFFSET = NYQUIST >> 1;
 
+// minimum float point frequency 
+const float MAX_FLOAT_PRECISION = 0.01;
+
+// global time index (increments at SAMPLE_RATE Hz)
 unsigned long GlobalTimeIndex = 0;
 
+const unsigned long MaxGlobalTimeIndex = SAMPLE_RATE / MAX_FLOAT_PRECISION;
+const unsigned long MaxGlobalTimeIndexWindow = MaxGlobalTimeIndex - WINDOW_SIZE;
+
+// used for debugging / printing waves
 const char* getWaveName(WaveType aWaveType) {
   static const char* const names[] = {
     "SINE", "COSINE", "SQUARE", "SAWTOOTH", "TRIANGLE"
@@ -87,16 +97,21 @@ WaveType ClassWave::getWaveType(void) const { return this->waveType; }
 void ClassWave::calculateSineWave(void) {
   if (StaticSineWaveInitialzed) return;
   StaticSineWaveInitialzed = 1;
-  float _resolution = float(2.0 * PI / SAMPLE_RATE);
+  float _resolution = 2.0 * PI / SAMPLE_RATE;
   //int _dacMid = int(DAC_RESOLUTION) << 4;
   for (int x = 0; x < SAMPLE_RATE; x++) {
-    StaticSineWave[x] = sin(float(_resolution * x));
+    StaticSineWave[x] = sin(_resolution * x);
   }
 }
 
 void ClassWave::iterateTimeIndex(void) { GlobalTimeIndex += 1; }
 
-void ClassWave::synchronizeTimeIndex(void) { GlobalTimeIndex -= WINDOW_SIZE; }
+void ClassWave::synchronizeTimeIndex(void) { 
+  if (GlobalTimeIndex == 0) {
+    GlobalTimeIndex = MaxGlobalTimeIndexWindow;
+    return;
+  }
+  GlobalTimeIndex -= WINDOW_SIZE; }
 
 Sine::Sine() { this->waveType = SINE; }
 

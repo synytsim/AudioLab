@@ -14,7 +14,7 @@ void setup() {
   AudioLab.init();
 
   // set frequency and amplitude
-  aStaticWave->setFrequency(0.1);
+  aStaticWave->setFrequency(0.2);
   aStaticWave->setAmplitude(0.5);
 }
 
@@ -23,10 +23,11 @@ void loop() {
   if (AudioLab.ready()) {
     // can also modify channel, frequency, amplitude, phase, and wave type here...
     //aStaticWave->setFrequency(200);
-    Wave aDynamicWave = AudioLab.dynamicWave(1, 0.5, 0.5, 0.0, SINE);
 
     // call AudioLab.synthesize()
     AudioLab.synthesize();
-  }
 
+
+    // AudioLab.printWaves();
+  }
 }

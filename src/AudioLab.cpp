@@ -151,7 +151,7 @@ void ClassAudioLab::printWaves(void) {
 
       if (_wavePtr->getChannel() != c) continue;
 
-      Serial.printf("(%s, %d, %d, %d)  ", getWaveName(_wavePtr->getWaveType()), _wavePtr->getFrequency(), _wavePtr->getAmplitude(), _wavePtr->getPhase());
+      Serial.printf("(%s, %.2f, %.2f, %.2f)  ", getWaveName(_wavePtr->getWaveType()), _wavePtr->getFrequency(), _wavePtr->getAmplitude(), _wavePtr->getPhase());
     }
     Serial.println();
   }
