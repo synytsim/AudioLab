@@ -50,7 +50,7 @@ Wave is a pointer to a derived object of base ClassWave, to create a valid point
 
 **aWaveName->set**(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) - set wave's parameters
 
-**aWaveName->reset**(int aFrequency) - reset wave's frequency, amplitude, and phase
+**aWaveName->reset**() - reset wave's frequency, amplitude, and phase
 
 **aWaveName->setFrequency**(int aFrequency) - set wave's frequency
 
