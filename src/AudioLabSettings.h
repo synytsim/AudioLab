@@ -14,4 +14,6 @@
 #define OUT_PIN_CH1 A0
 #define OUT_PIN_CH2 A1
 
+#define DAC_RESOLUTION 8
+
 #endif

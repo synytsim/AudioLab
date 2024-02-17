@@ -56,7 +56,7 @@ void ClassAudioLab::synthesize(void) {
   generateAudio();
 }
 
-Wave ClassAudioLab::getNewWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
+Wave ClassAudioLab::getNewWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType) {
   Wave _newWave = NULL;
   if (aWaveType == SINE) _newWave = new Sine;
   else if (aWaveType == COSINE) _newWave = new Cosine;
@@ -86,7 +86,7 @@ Wave ClassAudioLab::staticWave(WaveType aWaveType) { return staticWave(0, 0, 0, 
 
 Wave ClassAudioLab::staticWave(uint8_t aChannel, WaveType aWaveType) { return staticWave(aChannel, 0, 0, 0, aWaveType); }
 
-Wave ClassAudioLab::staticWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
+Wave ClassAudioLab::staticWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType) {
   Wave _newWave = getNewWave(aChannel, aFrequency, anAmplitude, aPhase, aWaveType);
   if (_newWave != NULL) pushWaveNode(_newWave, globalWaveList, 0);
   else Serial.println("CREATE STATIC WAVE FAILED DUE TO INVALID PARAMETERS!");
@@ -97,7 +97,7 @@ Wave ClassAudioLab::dynamicWave(WaveType aWaveType) { return dynamicWave(0, 0, 0
 
 Wave ClassAudioLab::dynamicWave(uint8_t aChannel, WaveType aWaveType) { return dynamicWave(aChannel, 0, 0, 0, aWaveType); }
 
-Wave ClassAudioLab::dynamicWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
+Wave ClassAudioLab::dynamicWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType) {
   Wave _newWave = getNewWave(aChannel, aFrequency, anAmplitude, aPhase, aWaveType);
   if (_newWave != NULL) pushWaveNode(_newWave, globalWaveList, 1);
   else Serial.println("CREATE DYNAMIC WAVE FAILED DUE TO INVALID PARAMETERS!");

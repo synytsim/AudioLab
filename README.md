@@ -16,7 +16,7 @@ The pins AudioLab uses on the Adafruit ESP32 Feather:
 * **A0** and **A1** for output
 * **A2** and **A3** for input
 
-The sample rate, window size and number of input and output channels can be modified in the **AudioLabSettings.h** file located in the **src** folder
+The sample rate, window size and number of input and output channels can be modified in the **AudioLabSettings.h** file located in the **src** folder.
 
 ## API
 
@@ -48,15 +48,15 @@ AudioLab is a singleton instance of ClassAudioLab
 
 Wave is a pointer to a derived object of base ClassWave, to create a valid pointer use `Wave aWaveName = AudioLab.staticWave()` or `Wave aWaveName = AudioLab.dynamicWave()`
 
-**aWaveName->set**(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) - set wave's parameters
+**aWaveName->set**(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase) - set wave's parameters
 
-**aWaveName->reset**(int aFrequency) - reset wave's frequency, amplitude, and phase
+**aWaveName->reset**(void) - reset wave's frequency, amplitude, and phase
 
-**aWaveName->setFrequency**(int aFrequency) - set wave's frequency
+**aWaveName->setFrequency**(float aFrequency) - set wave's frequency
 
-**aWaveName->setAmplitude**(int anAmplitude) - set wave's amplitude
+**aWaveName->setAmplitude**(float anAmplitude) - set wave's amplitude
 
-**aWaveName->setPhase**(int aPhase) - set wave's phase
+**aWaveName->setPhase**(float aPhase) - set wave's phase
 
 **aWaveName->setChannel**(uint8_t aChannel) - set wave's channel
 

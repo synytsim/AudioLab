@@ -40,7 +40,7 @@ class ClassAudioLab
     void resetAudInOut();
 
     // returns pointer to a wave of wave type
-    Wave getNewWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType);
+    Wave getNewWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType);
 
     // removes all dynamic waves from wave list
     void removeDynamicWaves();
@@ -141,7 +141,7 @@ class ClassAudioLab
      */
     Wave staticWave(WaveType aWaveType = SINE);
     Wave staticWave(uint8_t aChannel, WaveType aWaveType = SINE);
-    Wave staticWave(uint8_t aChannel, int aFrequency = 0, int anAmplitude = 0, int aPhase = 0,  WaveType aWaveType = SINE);
+    Wave staticWave(uint8_t aChannel, float aFrequency = 0, float anAmplitude = 0, float aPhase = 0,  WaveType aWaveType = SINE);
 
     /**
      * Create a 'dynamic' wave object and returns a pointer to the object
@@ -158,7 +158,7 @@ class ClassAudioLab
      */
     Wave dynamicWave(WaveType aWaveType = SINE);
     Wave dynamicWave(uint8_t aChannel, WaveType aWaveType = SINE);
-    Wave dynamicWave(uint8_t aChannel, int aFrequency = 0, int anAmplitude = 0, int aPhase = 0,  WaveType aWaveType = SINE);
+    Wave dynamicWave(uint8_t aChannel, float aFrequency = 0, float anAmplitude = 0, float aPhase = 0,  WaveType aWaveType = SINE);
     
     /**
      * Change the wave type of an existing wave

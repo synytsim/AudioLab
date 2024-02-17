@@ -48,7 +48,7 @@ float ClassAudioLab::getSumOfChannel(uint8_t aChannel) {
   WaveNode* _currentNode = generateAudioWaveList[aChannel];
   if (_currentNode == NULL) return _sum;
   while (_currentNode != NULL) {
-    _sum += _currentNode->waveRef->getWaveValue(staticTimeIdx);
+    _sum += _currentNode->waveRef->getWaveValue();
     //_sum += getWaveVal(_currentNode->waveRef);
     _currentNode = _currentNode->next;
   }
@@ -87,8 +87,7 @@ void ClassAudioLab::generateAudio() {
     generateAudioBufferIdx += 1;
     if (generateAudioBufferIdx == GEN_AUD_BUFFER_SIZE) generateAudioBufferIdx = 0;
     // increment time index
-    staticTimeIdx += 1;
-    if (staticTimeIdx == SAMPLE_RATE) staticTimeIdx = 0;
+    ClassWave::iterateTimeIndex();
   } 
 
   // reset the next window to synthesize new signal
@@ -102,7 +101,7 @@ void ClassAudioLab::generateAudio() {
   }
   // determine the next position in the sine wave table, and scratch pad audio output buffer to counter phase cosine wave
   generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_IN_BUFFER_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
-  staticTimeIdx = int(staticTimeIdx - AUD_IN_BUFFER_SIZE + SAMPLE_RATE) % int(SAMPLE_RATE);
+  ClassWave::synchronizeTimeIndex();
 
   // free generateAudioWaveList
   for (int c = 0; c < NUM_OUT_CH; c++) {

@@ -6,7 +6,7 @@
 */
 
 #include <AudioLab.h>
-#include <arduinoFFT.h>
+#include <arduinoFFTFloat.h>
 
 // arduino FFT stuff...
 double vReal[WINDOW_SIZE];
