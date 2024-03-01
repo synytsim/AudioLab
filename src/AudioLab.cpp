@@ -52,6 +52,32 @@ bool ClassAudioLab::ready(void) {
   return true;
 }
 
+void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
+  if (aChannel < 0 || aChannel >= NUM_OUT_CH) return;
+  if (aMin == 0.0) return;
+
+  float _amplitudeSum = 0.0;
+
+  WaveNode* current = globalWaveList;
+  while (current != NULL) {
+    if (current->waveRef->getChannel() == aChannel) {
+      _amplitudeSum += current->waveRef->getAmplitude();
+    }
+    current = current->next;
+  }
+
+  if (_amplitudeSum == 0.0) return;
+  float _divideBy = 1.0 / (_amplitudeSum > aMin ? _amplitudeSum : aMin);
+
+  current = globalWaveList;
+  while (current != NULL) {
+    if (current->waveRef->getChannel() == aChannel) {
+      current->waveRef->setAmplitude(current->waveRef->getAmplitude() * _divideBy);
+    }
+    current = current->next;
+  }
+}
+
 void ClassAudioLab::synthesize(void) {
   generateAudio();
 }

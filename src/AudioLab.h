@@ -120,6 +120,14 @@ class ClassAudioLab
     bool ready();
 
     /**
+     * Linearly maps amplitudes of all waves on a channel so their sum will be
+     * less than or equal to 1.0.
+     * @param aChannel channel of the waves to be mapped
+     * @param aMin the minumum value to use for mapping, if amplitude sum surpasses this value then the amplitude sum will be used.
+     */
+    void mapAmplitudes(uint8_t aChannel, float aMin);
+
+    /**
      * Fills output buffer with synthesized signal composed of assigned waves
      *
      * @note This function MUST be called in the "if (AudioLab.ready())" block
