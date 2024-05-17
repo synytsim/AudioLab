@@ -71,6 +71,12 @@ class ClassAudioLab
     // linked list storing references to waves the need to be synthesizes (ie amplitude != 0 or frequency and phase != 0)
     static WaveNode* generateAudioWaveList[NUM_OUT_CH]; 
 
+    static const int DAC_MAX = (1 << DAC_RESOLUTION) - 1;
+    static const int DAC_MID = 1 << (DAC_RESOLUTION - 1);
+
+    static const int ADC_MAX = (1 << ADC_RESOLUTION) - 1;
+    static const int ADC_MID = 1 << (ADC_RESOLUTION - 1);
+
     // input, output and generate audio buffer sizes
     static const int AUD_IN_BUFFER_SIZE = WINDOW_SIZE;
     static const int AUD_OUT_BUFFER_SIZE = WINDOW_SIZE * 2;

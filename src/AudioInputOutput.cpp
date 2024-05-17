@@ -28,11 +28,11 @@ void ClassAudioLab::configurePins(void) {
 void ClassAudioLab::resetAudInOut(void) {
   for (int i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
     for (int c = 0; c < NUM_OUT_CH; c++) {
-      AUD_OUT_BUFFER[c][i] = 128;
+      AUD_OUT_BUFFER[c][i] = DAC_MID;
     }
     if (i < AUD_IN_BUFFER_SIZE) {
       for (int c = 0; c < NUM_IN_CH; c++) {
-        AUD_IN_BUFFER[c][i] = 2048;
+        AUD_IN_BUFFER[c][i] = ADC_MID;
       }
     }
   }

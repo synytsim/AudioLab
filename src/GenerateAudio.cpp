@@ -77,7 +77,7 @@ void ClassAudioLab::generateAudio() {
     if (i < AUD_IN_BUFFER_SIZE) {
       // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between 0 - 255
       for (int c = 0; c < NUM_OUT_CH; c++) {
-        AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = max(0, min(255, int(round(generateAudioBuffer[c][generateAudioBufferIdx] + 128.0))));
+        AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = max(0, min(DAC_MAX, int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID))));
       }
       generateAudioOutBufferIdx += 1;
       if (generateAudioOutBufferIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutBufferIdx = 0;
