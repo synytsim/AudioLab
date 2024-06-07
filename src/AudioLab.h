@@ -92,14 +92,22 @@ class ClassAudioLab
     volatile static int AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
     volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
 
+    #ifdef ARDUINO_FEATHER_ESP32
     // function that gets called when timer is triggered
-    static void IRAM_ATTR AUD_IN_OUT(void);
-
+    static void ARDUINO_ISR_ATTR AUD_IN_OUT(void);
     // returns true when input buffer is full
-    static bool IRAM_ATTR AUD_IN_BUFFER_FULL(void);
+    static bool ARDUINO_ISR_ATTR AUD_IN_BUFFER_FULL(void);
+    #else
+    // function that gets called when timer is triggered
+    static void AUD_IN_OUT(void);
+    // returns true when input buffer is full
+    static bool AUD_IN_BUFFER_FULL(void);
+    #endif
 
     // restores input buffer index and synchronizes audio output buffer
-    void SYNC_AUD_IN_OUT_IDX();
+    void SYNC_AUD_IN_OUT_IDX(void);
+
+    static void blankFunction(void);
 
   public:
     // delete assignment operators

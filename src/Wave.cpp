@@ -47,7 +47,7 @@ void ClassWave::set(uint8_t aChannel, float aFrequency, float anAmplitude, float
   this->amplitude = anAmplitude;
   this->phase = aPhase;
 
-  this->_amplitude = int(round(this->amplitude * ((int(DAC_RESOLUTION) << 4) - 1)));
+  this->_amplitude = int(round(this->amplitude * (1 << (DAC_RESOLUTION - 1))) - 1);
   this->_phase = int(round(this->phase * SAMPLE_RATE));
 }
 
@@ -67,7 +67,7 @@ void ClassWave::setFrequency(float aFrequency) {
 
 void ClassWave::setAmplitude(float anAmplitude) { 
   this->amplitude = anAmplitude; 
-  this->_amplitude = int(round(this->amplitude * ((int(DAC_RESOLUTION) << 4) - 1)));
+  this->_amplitude = int(round(this->amplitude * (1 << (DAC_RESOLUTION - 1))) - 1);
 }
 
 void ClassWave::setPhase(float aPhase) {

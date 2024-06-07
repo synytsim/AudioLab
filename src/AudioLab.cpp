@@ -18,7 +18,7 @@ void ClassAudioLab::init(void) {
   configurePins();
 
   float _sampleDelay = 1000000 / SAMPLE_RATE;
-  Serial.printf("SAMPLE RATE: %d Hz    WINDOW SIZE: %d    SPEED : %.1f Hz    TIME PER WINDOW: %.1f ms", SAMPLE_RATE, WINDOW_SIZE, float(SAMPLE_RATE) / WINDOW_SIZE,  _sampleDelay * WINDOW_SIZE * 0.001);
+  Serial.printf("SAMPLE RATE: %d Hz    WINDOW SIZE: %d    CONTROL RATE : %.1f Hz    TIME PER WINDOW: %.1f ms", SAMPLE_RATE, WINDOW_SIZE, float(SAMPLE_RATE) / WINDOW_SIZE,  _sampleDelay * WINDOW_SIZE * 0.001);
   Serial.println();
 
   delay(1000);
@@ -177,7 +177,16 @@ void ClassAudioLab::printWaves(void) {
 
       if (_wavePtr->getChannel() != c) continue;
 
-      Serial.printf("(%s, %.2f, %.2f, %.2f)  ", getWaveName(_wavePtr->getWaveType()), _wavePtr->getFrequency(), _wavePtr->getAmplitude(), _wavePtr->getPhase());
+      // Serial.printf("(%s, %.2f, %.2f, %.2f)  ", getWaveName(_wavePtr->getWaveType()), double(_wavePtr->getFrequency()), double(_wavePtr->getAmplitude()), double(_wavePtr->getPhase()));
+      Serial.print("(");
+      Serial.print(getWaveName(_wavePtr->getWaveType()));
+      Serial.print(", ");
+      Serial.print(_wavePtr->getFrequency(), 2);
+      Serial.print(", ");
+      Serial.print(_wavePtr->getAmplitude(), 2);
+      Serial.print(", ");
+      Serial.print(_wavePtr->getPhase(), 2);
+      Serial.print(")  ");
     }
     Serial.println();
   }

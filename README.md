@@ -70,4 +70,4 @@ Wave is a pointer to a derived object of base ClassWave, to create a valid point
 
 ## Compatibility
 
-At the time the library is only compatible with the Adafruit HUZZAH ESP32 Feather (other boards have not been tested), support for other boards will be added in future update
+At the time the library is only compatible with Adafruit HUZZAH ESP32 Feather and Adafruit Feather M4 Express (other boards have not been tested), support for more boards will be added in future update.

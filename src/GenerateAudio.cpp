@@ -10,6 +10,7 @@ int generateAudioOutBufferIdx = 0;
 int staticTimeIdx = 0; 
 
 void ClassAudioLab::resetGenerateAudio() {
+  //Serial.printf("%d, %d, %d, %d\n", DAC_MAX, DAC_MID, ADC_MAX, ADC_MID);
   // restore scratch pad buffer values
   for (int c = 0; c < NUM_OUT_CH; c++) {
     freeWaveList(generateAudioWaveList[c]);
