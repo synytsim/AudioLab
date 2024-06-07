@@ -32,7 +32,6 @@ ClassWave::ClassWave(void) {
   this->phase = 0;
   this->channel = 0;
 
-  this->_amplitude = 0;
   this->_phase = 0;
   //Serial.println("WAVE ADDED");
 }
@@ -46,9 +45,6 @@ void ClassWave::set(uint8_t aChannel, float aFrequency, float anAmplitude, float
   this->frequency = aFrequency;
   this->amplitude = anAmplitude;
   this->phase = aPhase;
-
-  this->_amplitude = int(round(this->amplitude * (1 << (DAC_RESOLUTION - 1))) - 1);
-  this->_phase = int(round(this->phase * SAMPLE_RATE));
 }
 
 void ClassWave::reset() {
@@ -67,7 +63,6 @@ void ClassWave::setFrequency(float aFrequency) {
 
 void ClassWave::setAmplitude(float anAmplitude) { 
   this->amplitude = anAmplitude; 
-  this->_amplitude = int(round(this->amplitude * (1 << (DAC_RESOLUTION - 1))) - 1);
 }
 
 void ClassWave::setPhase(float aPhase) {
@@ -118,7 +113,7 @@ Sine::Sine() { this->waveType = SINE; }
 float Sine::getWaveValue() const {;
   float _timeValue = (GlobalTimeIndex * frequency + _phase) * INVERSE_SAMPLE_RATE;
   int _timeIdx = (_timeValue - floor(_timeValue)) * SAMPLE_RATE;
-  return _amplitude * StaticSineWave[_timeIdx];
+  return amplitude * StaticSineWave[_timeIdx];
 }
 
 Cosine::Cosine() { this->waveType = COSINE; }
@@ -126,7 +121,7 @@ Cosine::Cosine() { this->waveType = COSINE; }
 float Cosine::getWaveValue() const {
   float _timeValue = (GlobalTimeIndex * frequency + _phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
   int _timeIdx = (_timeValue - floor(_timeValue)) * SAMPLE_RATE;
-  return _amplitude * StaticSineWave[_timeIdx];
+  return amplitude * StaticSineWave[_timeIdx];
 }
 
 Square::Square() { this->waveType = SQUARE; }
@@ -134,8 +129,8 @@ Square::Square() { this->waveType = SQUARE; }
 float Square::getWaveValue() const {
   float _timeValue = (GlobalTimeIndex * frequency + _phase) * INVERSE_SAMPLE_RATE;
   float _timeIdx = _timeValue - floor(_timeValue);
-  if (_timeIdx < 0.5) return _amplitude;
-  return -_amplitude;
+  if (_timeIdx < 0.5) return amplitude;
+  return -amplitude;
 }
 
 Triangle::Triangle() { this->waveType = TRIANGLE; }
@@ -143,8 +138,8 @@ Triangle::Triangle() { this->waveType = TRIANGLE; }
 float Triangle::getWaveValue() const {
   float _timeValue = (GlobalTimeIndex * frequency + _phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
   float _timeIdx = _timeValue - floor(_timeValue);
-  if (_timeIdx < 0.5) return -_amplitude + (_amplitude << 2) * _timeIdx;
-  return _amplitude - (_amplitude << 2) * (_timeIdx - 0.5);
+  if (_timeIdx < 0.5) return -amplitude + amplitude * 4 * _timeIdx;
+  return amplitude - amplitude * 4 * (_timeIdx - 0.5);
 }
 
 Sawtooth::Sawtooth() { this->waveType = SAWTOOTH; }
@@ -152,5 +147,5 @@ Sawtooth::Sawtooth() { this->waveType = SAWTOOTH; }
 float Sawtooth::getWaveValue() const {
   float _timeValue = (GlobalTimeIndex * frequency + _phase + NYQUIST) * INVERSE_SAMPLE_RATE;
   float _timeIdx = _timeValue - floor(_timeValue);
-  return (_amplitude << 1) * _timeIdx - amplitude;
+  return amplitude * 2 * _timeIdx - amplitude;
 }

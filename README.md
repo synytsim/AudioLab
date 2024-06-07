@@ -12,7 +12,7 @@ To use this library in Arduino add this line to your sketch
 
 `include <AudioLab.h>`
 
-The pins AudioLab uses on the Adafruit ESP32 Feather:
+The pins AudioLab uses on the Adafruit ESP32 Feather and Adafruit Feather M4 Express:
 * **A0** and **A1** for output
 * **A2** and **A3** for input
 

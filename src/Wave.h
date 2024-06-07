@@ -24,8 +24,7 @@ class ClassWave
     float frequency;
     float amplitude;
     float phase;
-
-    int _amplitude;
+    
     int _phase;
 
     uint8_t channel;
