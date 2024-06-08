@@ -1,12 +1,24 @@
 #include "Wave.h"
 
+// sine wave table
 float StaticSineWave[SAMPLE_RATE];
 bool StaticSineWaveInitialzed = 0;
 
+// various constansts for wave value calculations
 const float INVERSE_SAMPLE_RATE = 1.0 / SAMPLE_RATE;
 const int NYQUIST = int(SAMPLE_RATE) >> 1;
 const int WAVE_OFFSET = NYQUIST >> 1;
 
+// minimum float point frequency 
+const float MAX_FLOAT_PRECISION = 0.01;
+
+// global time index (increments at SAMPLE_RATE Hz)
+unsigned long GlobalTimeIndex = 0;
+
+const unsigned long MaxGlobalTimeIndex = SAMPLE_RATE / MAX_FLOAT_PRECISION;
+const unsigned long MaxGlobalTimeIndexWindow = MaxGlobalTimeIndex - WINDOW_SIZE;
+
+// used for debugging / printing waves
 const char* getWaveName(WaveType aWaveType) {
   static const char* const names[] = {
     "SINE", "COSINE", "SQUARE", "SAWTOOTH", "TRIANGLE"
@@ -19,6 +31,8 @@ ClassWave::ClassWave(void) {
   this->amplitude = 0;
   this->phase = 0;
   this->channel = 0;
+
+  this->_phase = 0;
   //Serial.println("WAVE ADDED");
 }
 
@@ -26,7 +40,7 @@ ClassWave::~ClassWave(void) {
   //Serial.println("WAVE REMOVED");
 }
 
-void ClassWave::set(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase) {
+void ClassWave::set(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase) {
   this->channel = aChannel;
   this->frequency = aFrequency;
   this->amplitude = anAmplitude;
@@ -39,7 +53,7 @@ void ClassWave::reset() {
   this->phase = 0;
 }
 
-void ClassWave::setFrequency(int aFrequency) { 
+void ClassWave::setFrequency(float aFrequency) { 
   if (!(aFrequency >= 0)) {
     Serial.println("FREQUENCY MUST BE POSITIVE!");
     return;
@@ -47,14 +61,17 @@ void ClassWave::setFrequency(int aFrequency) {
   this->frequency = aFrequency; 
 }
 
-void ClassWave::setAmplitude(int anAmplitude) { this->amplitude = anAmplitude; }
+void ClassWave::setAmplitude(float anAmplitude) { 
+  this->amplitude = anAmplitude; 
+}
 
-void ClassWave::setPhase(int aPhase) {
+void ClassWave::setPhase(float aPhase) {
   if (!(aPhase >= 0)) {
     Serial.println("PHASE MUST BE POSITIVE!");
     return;
   }
   this->phase = aPhase;
+  this->_phase = int(round(this->phase * SAMPLE_RATE));
 }
 
 void ClassWave::setChannel(uint8_t aChannel)  {
@@ -65,9 +82,9 @@ void ClassWave::setChannel(uint8_t aChannel)  {
   this->channel = aChannel;
 }
 
-int ClassWave::getFrequency(void) const { return this->frequency; }
-int ClassWave::getAmplitude(void) const { return this->amplitude; }
-int ClassWave::getPhase(void) const { return this->phase; }
+float ClassWave::getFrequency(void) const { return this->frequency; }
+float ClassWave::getAmplitude(void) const { return this->amplitude; }
+float ClassWave::getPhase(void) const { return this->phase; }
 uint8_t ClassWave::getChannel(void) const { return this->channel; }
 
 WaveType ClassWave::getWaveType(void) const { return this->waveType; }
@@ -75,37 +92,41 @@ WaveType ClassWave::getWaveType(void) const { return this->waveType; }
 void ClassWave::calculateSineWave(void) {
   if (StaticSineWaveInitialzed) return;
   StaticSineWaveInitialzed = 1;
-  float _resolution = float(2.0 * PI / SAMPLE_RATE);
+  float _resolution = 2.0 * PI / SAMPLE_RATE;
   for (int x = 0; x < SAMPLE_RATE; x++) {
-    StaticSineWave[x] = sin(float(_resolution * x));
+    StaticSineWave[x] = sin(_resolution * x);
   }
 }
 
-// float ClassWave::getTimeValue(int aTimeIdx, int anOffset) {
-//   float _waveTimeValue= (aTimeIdx * frequency + phase + anOffset) * INVERSE_SAMPLE_RATE;
-//   return _waveTimeValue - floor(_waveTimeValue);
-// }
+void ClassWave::iterateTimeIndex(void) { GlobalTimeIndex += 1; }
+
+void ClassWave::synchronizeTimeIndex(void) { 
+  if (GlobalTimeIndex == 0) {
+    GlobalTimeIndex = MaxGlobalTimeIndexWindow;
+    return;
+  }
+  GlobalTimeIndex -= WINDOW_SIZE; }
 
 Sine::Sine() { this->waveType = SINE; }
 
-float Sine::getWaveValue(int aTimeIdx) const {;
-  float _timeValue = (aTimeIdx * frequency + phase) * INVERSE_SAMPLE_RATE;
+float Sine::getWaveValue() const {;
+  float _timeValue = (GlobalTimeIndex * frequency + _phase) * INVERSE_SAMPLE_RATE;
   int _timeIdx = (_timeValue - floor(_timeValue)) * SAMPLE_RATE;
   return amplitude * StaticSineWave[_timeIdx];
 }
 
 Cosine::Cosine() { this->waveType = COSINE; }
 
-float Cosine::getWaveValue(int aTimeIdx) const {
-  float _timeValue = (aTimeIdx * frequency + phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
+float Cosine::getWaveValue() const {
+  float _timeValue = (GlobalTimeIndex * frequency + _phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
   int _timeIdx = (_timeValue - floor(_timeValue)) * SAMPLE_RATE;
   return amplitude * StaticSineWave[_timeIdx];
 }
 
 Square::Square() { this->waveType = SQUARE; }
 
-float Square::getWaveValue(int aTimeIdx) const {
-  float _timeValue = (aTimeIdx * frequency + phase) * INVERSE_SAMPLE_RATE;
+float Square::getWaveValue() const {
+  float _timeValue = (GlobalTimeIndex * frequency + _phase) * INVERSE_SAMPLE_RATE;
   float _timeIdx = _timeValue - floor(_timeValue);
   if (_timeIdx < 0.5) return amplitude;
   return -amplitude;
@@ -113,17 +134,17 @@ float Square::getWaveValue(int aTimeIdx) const {
 
 Triangle::Triangle() { this->waveType = TRIANGLE; }
 
-float Triangle::getWaveValue(int aTimeIdx) const {
-  float _timeValue = (aTimeIdx * frequency + phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
+float Triangle::getWaveValue() const {
+  float _timeValue = (GlobalTimeIndex * frequency + _phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
   float _timeIdx = _timeValue - floor(_timeValue);
-  if (_timeIdx < 0.5) return -amplitude + (amplitude << 2) * _timeIdx;
-  return amplitude - (amplitude << 2) * (_timeIdx - 0.5);
+  if (_timeIdx < 0.5) return -amplitude + amplitude * 4 * _timeIdx;
+  return amplitude - amplitude * 4 * (_timeIdx - 0.5);
 }
 
 Sawtooth::Sawtooth() { this->waveType = SAWTOOTH; }
 
-float Sawtooth::getWaveValue(int aTimeIdx) const {
-  float _timeValue = (aTimeIdx * frequency + phase + NYQUIST) * INVERSE_SAMPLE_RATE;
+float Sawtooth::getWaveValue() const {
+  float _timeValue = (GlobalTimeIndex * frequency + _phase + NYQUIST) * INVERSE_SAMPLE_RATE;
   float _timeIdx = _timeValue - floor(_timeValue);
-  return (amplitude << 1) * _timeIdx - amplitude;
+  return amplitude * 2 * _timeIdx - amplitude;
 }

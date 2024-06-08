@@ -6,11 +6,11 @@
 */
 
 #include <AudioLab.h>
-#include <arduinoFFT.h>
+#include <arduinoFFTFloat.h>
 
 // arduino FFT stuff...
-double vReal[WINDOW_SIZE];
-double vImag[WINDOW_SIZE];
+float vReal[WINDOW_SIZE];
+float vImag[WINDOW_SIZE];
 arduinoFFT FFT = arduinoFFT(vReal, vImag, WINDOW_SIZE, SAMPLE_RATE);
 
 // get pointer to AudioLab input buffer on channel 0
@@ -42,10 +42,11 @@ void loop() {
     FFT.Compute(FFT_FORWARD);
     FFT.ComplexToMagnitude();
 
-    // use arduinoFFT MajorPeak function to get peak frequency in FFT of AudioLab's input buffer...
+    // In this example, arduinoFFT MajorPeak function is used get peak frequency in FFT of AudioLab's input buffer...
     double FFTPeakFrequency = FFT.MajorPeak();
-    // synthesize a sine wave with the peak frequency, with an amplitude of 100
-    AudioLab.dynamicWave(0, FFTPeakFrequency, 100, 0, SINE);
+    
+    // synthesize a sine wave with the peak frequency, with an amplitude of 0.5
+    AudioLab.dynamicWave(0, FFTPeakFrequency, 0.5, 0, SINE);
 
     // call AudioLab.synthesize() after waves are set
     AudioLab.synthesize();

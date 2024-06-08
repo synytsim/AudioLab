@@ -40,7 +40,7 @@ class ClassAudioLab
     void resetAudInOut();
 
     // returns pointer to a wave of wave type
-    Wave getNewWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType);
+    Wave getNewWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType);
 
     // removes all dynamic waves from wave list
     void removeDynamicWaves();
@@ -71,6 +71,12 @@ class ClassAudioLab
     // linked list storing references to waves the need to be synthesizes (ie amplitude != 0 or frequency and phase != 0)
     static WaveNode* generateAudioWaveList[NUM_OUT_CH]; 
 
+    static const int DAC_MAX = (1 << DAC_RESOLUTION) - 1;
+    static const int DAC_MID = 1 << (DAC_RESOLUTION - 1);
+
+    static const int ADC_MAX = (1 << ADC_RESOLUTION) - 1;
+    static const int ADC_MID = 1 << (ADC_RESOLUTION - 1);
+
     // input, output and generate audio buffer sizes
     static const int AUD_IN_BUFFER_SIZE = WINDOW_SIZE;
     static const int AUD_OUT_BUFFER_SIZE = WINDOW_SIZE * 2;
@@ -86,14 +92,22 @@ class ClassAudioLab
     volatile static int AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
     volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
 
+    #ifdef ARDUINO_FEATHER_ESP32
     // function that gets called when timer is triggered
-    static void IRAM_ATTR AUD_IN_OUT(void);
-
+    static void ARDUINO_ISR_ATTR AUD_IN_OUT(void);
     // returns true when input buffer is full
-    static bool IRAM_ATTR AUD_IN_BUFFER_FULL(void);
+    static bool ARDUINO_ISR_ATTR AUD_IN_BUFFER_FULL(void);
+    #else
+    // function that gets called when timer is triggered
+    static void AUD_IN_OUT(void);
+    // returns true when input buffer is full
+    static bool AUD_IN_BUFFER_FULL(void);
+    #endif
 
     // restores input buffer index and synchronizes audio output buffer
-    void SYNC_AUD_IN_OUT_IDX();
+    void SYNC_AUD_IN_OUT_IDX(void);
+
+    static void blankFunction(void);
 
   public:
     // delete assignment operators
@@ -120,6 +134,14 @@ class ClassAudioLab
     bool ready();
 
     /**
+     * Linearly maps amplitudes of all waves on a channel so their sum will be
+     * less than or equal to 1.0.
+     * @param aChannel channel of the waves to be mapped
+     * @param aMin the minumum value to use for mapping, if amplitude sum surpasses this value then the amplitude sum will be used.
+     */
+    void mapAmplitudes(uint8_t aChannel, float aMin);
+
+    /**
      * Fills output buffer with synthesized signal composed of assigned waves
      *
      * @note This function MUST be called in the "if (AudioLab.ready())" block
@@ -141,7 +163,7 @@ class ClassAudioLab
      */
     Wave staticWave(WaveType aWaveType = SINE);
     Wave staticWave(uint8_t aChannel, WaveType aWaveType = SINE);
-    Wave staticWave(uint8_t aChannel, int aFrequency = 0, int anAmplitude = 0, int aPhase = 0,  WaveType aWaveType = SINE);
+    Wave staticWave(uint8_t aChannel, float aFrequency = 0, float anAmplitude = 0, float aPhase = 0,  WaveType aWaveType = SINE);
 
     /**
      * Create a 'dynamic' wave object and returns a pointer to the object
@@ -158,7 +180,7 @@ class ClassAudioLab
      */
     Wave dynamicWave(WaveType aWaveType = SINE);
     Wave dynamicWave(uint8_t aChannel, WaveType aWaveType = SINE);
-    Wave dynamicWave(uint8_t aChannel, int aFrequency = 0, int anAmplitude = 0, int aPhase = 0,  WaveType aWaveType = SINE);
+    Wave dynamicWave(uint8_t aChannel, float aFrequency = 0, float anAmplitude = 0, float aPhase = 0,  WaveType aWaveType = SINE);
     
     /**
      * Change the wave type of an existing wave

@@ -18,8 +18,12 @@ void ClassAudioLab::init(void) {
   configurePins();
 
   float _sampleDelay = 1000000 / SAMPLE_RATE;
-  Serial.printf("SAMPLE RATE: %d Hz    WINDOW SIZE: %d    SPEED : %.1f Hz    TIME PER WINDOW: %.1f ms", SAMPLE_RATE, WINDOW_SIZE, float(SAMPLE_RATE) / WINDOW_SIZE,  _sampleDelay * WINDOW_SIZE * 0.001);
-  Serial.println();
+
+  Serial.printf("SAMPLE RATE: %d Hz    WINDOW SIZE: %d    CONTROL RATE: ", SAMPLE_RATE, WINDOW_SIZE);
+  Serial.print(float(SAMPLE_RATE) / WINDOW_SIZE, 2);
+  Serial.print(" Hz    TIME PER WINDOW: ");
+  Serial.print(_sampleDelay * WINDOW_SIZE * 0.001, 2);
+  Serial.println(" ms");
 
   delay(1000);
   initISR();
@@ -52,11 +56,37 @@ bool ClassAudioLab::ready(void) {
   return true;
 }
 
+void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
+  if (aChannel < 0 || aChannel >= NUM_OUT_CH) return;
+  if (aMin == 0.0) return;
+
+  float _amplitudeSum = 0.0;
+
+  WaveNode* current = globalWaveList;
+  while (current != NULL) {
+    if (current->waveRef->getChannel() == aChannel) {
+      _amplitudeSum += current->waveRef->getAmplitude();
+    }
+    current = current->next;
+  }
+
+  if (_amplitudeSum == 0.0) return;
+  float _divideBy = 1.0 / (_amplitudeSum > aMin ? _amplitudeSum : aMin);
+
+  current = globalWaveList;
+  while (current != NULL) {
+    if (current->waveRef->getChannel() == aChannel) {
+      current->waveRef->setAmplitude(current->waveRef->getAmplitude() * _divideBy);
+    }
+    current = current->next;
+  }
+}
+
 void ClassAudioLab::synthesize(void) {
   generateAudio();
 }
 
-Wave ClassAudioLab::getNewWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
+Wave ClassAudioLab::getNewWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType) {
   Wave _newWave = NULL;
   if (aWaveType == SINE) _newWave = new Sine;
   else if (aWaveType == COSINE) _newWave = new Cosine;
@@ -86,7 +116,7 @@ Wave ClassAudioLab::staticWave(WaveType aWaveType) { return staticWave(0, 0, 0, 
 
 Wave ClassAudioLab::staticWave(uint8_t aChannel, WaveType aWaveType) { return staticWave(aChannel, 0, 0, 0, aWaveType); }
 
-Wave ClassAudioLab::staticWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
+Wave ClassAudioLab::staticWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType) {
   Wave _newWave = getNewWave(aChannel, aFrequency, anAmplitude, aPhase, aWaveType);
   if (_newWave != NULL) pushWaveNode(_newWave, globalWaveList, 0);
   else Serial.println("CREATE STATIC WAVE FAILED DUE TO INVALID PARAMETERS!");
@@ -97,7 +127,7 @@ Wave ClassAudioLab::dynamicWave(WaveType aWaveType) { return dynamicWave(0, 0, 0
 
 Wave ClassAudioLab::dynamicWave(uint8_t aChannel, WaveType aWaveType) { return dynamicWave(aChannel, 0, 0, 0, aWaveType); }
 
-Wave ClassAudioLab::dynamicWave(uint8_t aChannel, int aFrequency, int anAmplitude, int aPhase, WaveType aWaveType) {
+Wave ClassAudioLab::dynamicWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType) {
   Wave _newWave = getNewWave(aChannel, aFrequency, anAmplitude, aPhase, aWaveType);
   if (_newWave != NULL) pushWaveNode(_newWave, globalWaveList, 1);
   else Serial.println("CREATE DYNAMIC WAVE FAILED DUE TO INVALID PARAMETERS!");
@@ -150,8 +180,18 @@ void ClassAudioLab::printWaves(void) {
       _currentNode = _currentNode->next;
 
       if (_wavePtr->getChannel() != c) continue;
+      if (_wavePtr->getAmplitude() == 0.0 || _wavePtr->getFrequency() == 0.0) continue;
 
-      Serial.printf("(%s, %d, %d, %d)  ", getWaveName(_wavePtr->getWaveType()), _wavePtr->getFrequency(), _wavePtr->getAmplitude(), _wavePtr->getPhase());
+      // Serial.printf("(%s, %.2f, %.2f, %.2f)  ", getWaveName(_wavePtr->getWaveType()), double(_wavePtr->getFrequency()), double(_wavePtr->getAmplitude()), double(_wavePtr->getPhase()));
+      Serial.print("(");
+      Serial.print(getWaveName(_wavePtr->getWaveType()));
+      Serial.print(", ");
+      Serial.print(_wavePtr->getFrequency(), 2);
+      Serial.print(", ");
+      Serial.print(_wavePtr->getAmplitude(), 2);
+      Serial.print(", ");
+      Serial.print(_wavePtr->getPhase(), 2);
+      Serial.print(")  ");
     }
     Serial.println();
   }

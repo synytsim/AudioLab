@@ -12,8 +12,8 @@
 #include <AudioLab.h>
 
 // create a static wave(wave that exists throughout runtime of whole program)
-// set initial parameters to channel = 0, frequency = 10Hz, amplitude = 20, phase = 0
-Wave aStaticWave = AudioLab.staticWave(0, 10, 20, 0, SINE);
+// set initial parameters to channel = 0, frequency = 10Hz, amplitude = 0.3, phase = 0
+Wave aStaticWave = AudioLab.staticWave(0, 10, 0.3, 0, SINE);
 
 // THIS WILL NOT WORK! The object that Wave is pointing to will be deleted once inside "if (AudioLab.ready())" block
 // Wave aDynamicWave = AudioLab.dynamicWave(0, 10, 20, 0, SINE);
@@ -32,7 +32,7 @@ void loop() {
     // When someCounter is less than 32, create a dynamic wave on channel = 0, frequency = 45, amplitude = 50, phase = 0
     if (someCounter < 32) {
       // dynamic wave will be created, but then deleted once it is out of scope of the "if (AudioLab.ready())" block
-      Wave aDynamicWave = AudioLab.dynamicWave(0, 45, 50, 0, SINE);
+      Wave aDynamicWave = AudioLab.dynamicWave(0, 45, 0.5, 0, SINE);
 
       // THIS WILL NOT WORK CORRECTLY! The program will continue running until chip runs out of memory
       //Wave aStaticWave2 = AudioLab.staticWave(0, 45, 50, 0, SINE);

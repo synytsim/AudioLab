@@ -13,9 +13,9 @@ void setup() {
   // init AudioLab
   AudioLab.init();
 
-  // set frequency and amplitude (Note: parameter of setAmplitude may change to float between -1.0 and 1.0 in future revision)
-  aStaticWave->setFrequency(200);
-  aStaticWave->setAmplitude(100);
+  // set frequency and amplitude
+  aStaticWave->setFrequency(0.2);
+  aStaticWave->setAmplitude(0.5);
 }
 
 void loop() {
@@ -26,6 +26,8 @@ void loop() {
 
     // call AudioLab.synthesize()
     AudioLab.synthesize();
-  }
 
+
+    // AudioLab.printWaves();
+  }
 }

@@ -10,6 +10,7 @@ int generateAudioOutBufferIdx = 0;
 int staticTimeIdx = 0; 
 
 void ClassAudioLab::resetGenerateAudio() {
+  //Serial.printf("%d, %d, %d, %d\n", DAC_MAX, DAC_MID, ADC_MAX, ADC_MID);
   // restore scratch pad buffer values
   for (int c = 0; c < NUM_OUT_CH; c++) {
     freeWaveList(generateAudioWaveList[c]);
@@ -48,11 +49,11 @@ float ClassAudioLab::getSumOfChannel(uint8_t aChannel) {
   WaveNode* _currentNode = generateAudioWaveList[aChannel];
   if (_currentNode == NULL) return _sum;
   while (_currentNode != NULL) {
-    _sum += _currentNode->waveRef->getWaveValue(staticTimeIdx);
+    _sum += _currentNode->waveRef->getWaveValue();
     //_sum += getWaveVal(_currentNode->waveRef);
     _currentNode = _currentNode->next;
   }
-  return _sum;
+  return _sum * (DAC_MID - 1);
 }
 
 void ClassAudioLab::generateAudio() {
@@ -77,7 +78,7 @@ void ClassAudioLab::generateAudio() {
     if (i < AUD_IN_BUFFER_SIZE) {
       // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between 0 - 255
       for (int c = 0; c < NUM_OUT_CH; c++) {
-        AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = max(0, min(255, int(round(generateAudioBuffer[c][generateAudioBufferIdx] + 128.0))));
+        AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = max(0, min(DAC_MAX, int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID))));
       }
       generateAudioOutBufferIdx += 1;
       if (generateAudioOutBufferIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutBufferIdx = 0;
@@ -87,8 +88,7 @@ void ClassAudioLab::generateAudio() {
     generateAudioBufferIdx += 1;
     if (generateAudioBufferIdx == GEN_AUD_BUFFER_SIZE) generateAudioBufferIdx = 0;
     // increment time index
-    staticTimeIdx += 1;
-    if (staticTimeIdx == SAMPLE_RATE) staticTimeIdx = 0;
+    ClassWave::iterateTimeIndex();
   } 
 
   // reset the next window to synthesize new signal
@@ -101,8 +101,9 @@ void ClassAudioLab::generateAudio() {
     if (_generateAudioBufferIdxCpy == GEN_AUD_BUFFER_SIZE) _generateAudioBufferIdxCpy = 0;
   }
   // determine the next position in the sine wave table, and scratch pad audio output buffer to counter phase cosine wave
-  generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_IN_BUFFER_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
-  staticTimeIdx = int(staticTimeIdx - AUD_IN_BUFFER_SIZE + SAMPLE_RATE) % int(SAMPLE_RATE);
+  // generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_IN_BUFFER_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
+  generateAudioBufferIdx = int(generateAudioBufferIdx + AUD_OUT_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
+  ClassWave::synchronizeTimeIndex();
 
   // free generateAudioWaveList
   for (int c = 0; c < NUM_OUT_CH; c++) {
