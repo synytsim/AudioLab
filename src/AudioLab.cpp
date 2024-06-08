@@ -180,6 +180,7 @@ void ClassAudioLab::printWaves(void) {
       _currentNode = _currentNode->next;
 
       if (_wavePtr->getChannel() != c) continue;
+      if (_wavePtr->getAmplitude() == 0.0 || _wavePtr->getFrequency() == 0.0) continue;
 
       // Serial.printf("(%s, %.2f, %.2f, %.2f)  ", getWaveName(_wavePtr->getWaveType()), double(_wavePtr->getFrequency()), double(_wavePtr->getAmplitude()), double(_wavePtr->getPhase()));
       Serial.print("(");

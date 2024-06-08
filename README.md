@@ -48,25 +48,25 @@ AudioLab is a singleton instance of ClassAudioLab
 
 Wave is a pointer to a derived object of base ClassWave, to create a valid pointer use `Wave aWaveName = AudioLab.staticWave()` or `Wave aWaveName = AudioLab.dynamicWave()`
 
-**aWaveName->set**(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase) - set wave's parameters
+* **aWaveName->set**(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase) - set wave's parameters
 
-**aWaveName->reset**(void) - reset wave's frequency, amplitude, and phase
+* **aWaveName->reset**(void) - reset wave's frequency, amplitude, and phase
 
-**aWaveName->setFrequency**(float aFrequency) - set wave's frequency
+* **aWaveName->setFrequency**(float aFrequency) - set wave's frequency
 
-**aWaveName->setAmplitude**(float anAmplitude) - set wave's amplitude
+* **aWaveName->setAmplitude**(float anAmplitude) - set wave's amplitude
 
-**aWaveName->setPhase**(float aPhase) - set wave's phase
+* **aWaveName->setPhase**(float aPhase) - set wave's phase
 
-**aWaveName->setChannel**(uint8_t aChannel) - set wave's channel
+* **aWaveName->setChannel**(uint8_t aChannel) - set wave's channel
 
-**int aWaveName->getFrequency**(void) - get wave's frequency
+* **float aWaveName->getFrequency**(void) - get wave's frequency
 
-**int aWaveName->getAmplitude**(void) - get wave's amplitude
+* **float aWaveName->getAmplitude**(void) - get wave's amplitude
 
-**int aWaveName->getPhase**(void) - get wave's phase
+* **float aWaveName->getPhase**(void) - get wave's phase
 
-**int aWaveName->getChannel**(void) - get wave's channel
+* **int aWaveName->getChannel**(void) - get wave's channel
 
 ## Compatibility
 

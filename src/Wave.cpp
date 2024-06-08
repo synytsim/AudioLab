@@ -93,7 +93,6 @@ void ClassWave::calculateSineWave(void) {
   if (StaticSineWaveInitialzed) return;
   StaticSineWaveInitialzed = 1;
   float _resolution = 2.0 * PI / SAMPLE_RATE;
-  //int _dacMid = int(DAC_RESOLUTION) << 4;
   for (int x = 0; x < SAMPLE_RATE; x++) {
     StaticSineWave[x] = sin(_resolution * x);
   }
