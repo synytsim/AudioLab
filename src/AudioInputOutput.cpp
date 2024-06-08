@@ -74,18 +74,10 @@ void ClassAudioLab::AUD_IN_OUT(void) {
   #endif
 
   #if NUM_IN_CH > 0
-    // #if defined(ARDUINO_FEATHER_ESP32)
-    // AUD_IN_BUFFER[0][AUD_IN_BUFFER_IDX] = adc1_get_raw(IN_PIN_CH1);
-    // #elif defined(__SAMD51__)
-    AUD_IN_BUFFER[0][AUD_IN_BUFFER_IDX] = analogRead(IN_PIN_CH1);
-    // #endif
+  AUD_IN_BUFFER[0][AUD_IN_BUFFER_IDX] = analogRead(IN_PIN_CH1);
   #endif
   #if NUM_IN_CH > 1
-    // #if defined(ARDUINO_FEATHER_ESP32)
-    // AUD_IN_BUFFER[1][AUD_IN_BUFFER_IDX] = adc1_get_raw(IN_PIN_CH2);
-    // #elif defined(__SAMD51__)
-    AUD_IN_BUFFER[1][AUD_IN_BUFFER_IDX] = analogRead(IN_PIN_CH2);
-    // #endif
+  AUD_IN_BUFFER[1][AUD_IN_BUFFER_IDX] = analogRead(IN_PIN_CH2);
   #endif
   
   AUD_IN_BUFFER_IDX += 1;

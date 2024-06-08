@@ -18,8 +18,12 @@ void ClassAudioLab::init(void) {
   configurePins();
 
   float _sampleDelay = 1000000 / SAMPLE_RATE;
-  Serial.printf("SAMPLE RATE: %d Hz    WINDOW SIZE: %d    CONTROL RATE : %.1f Hz    TIME PER WINDOW: %.1f ms", SAMPLE_RATE, WINDOW_SIZE, float(SAMPLE_RATE) / WINDOW_SIZE,  _sampleDelay * WINDOW_SIZE * 0.001);
-  Serial.println();
+
+  Serial.printf("SAMPLE RATE: %d Hz    WINDOW SIZE: %d    CONTROL RATE: ", SAMPLE_RATE, WINDOW_SIZE);
+  Serial.print(float(SAMPLE_RATE) / WINDOW_SIZE, 2);
+  Serial.print(" Hz    TIME PER WINDOW: ");
+  Serial.print(_sampleDelay * WINDOW_SIZE * 0.001, 2);
+  Serial.println(" ms");
 
   delay(1000);
   initISR();

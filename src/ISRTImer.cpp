@@ -11,7 +11,7 @@ void ClassAudioLab::initISR(void) {
   SAMPLING_TIMER = timerBegin(1000000);               // setting clock prescaler 1MHz (80MHz / 80)
   timerAttachInterrupt(SAMPLING_TIMER, &AUD_IN_OUT);  // attach interrupt function
   timerAlarm(SAMPLING_TIMER, sampleDelayTime, true, 0);        // trigger interrupt every sampleDelayTime microseconds
-  timerStart(SAMPLING_TIMER);
+  //timerStart(SAMPLING_TIMER);
 }
 
 void ClassAudioLab::pauseSampling(void) {

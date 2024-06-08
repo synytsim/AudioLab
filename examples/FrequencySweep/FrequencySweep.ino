@@ -7,7 +7,7 @@
 #include <AudioLab.h>
 
 // create a static wave(wave that exists throughout runtime of whole program)
-// set initial parameters to channel = 0, frequency = 10Hz, amplitude = 100, phase = 0
+// set initial parameters to channel = 0, frequency = 10Hz, amplitude = 1.0, phase = 0
 Wave aStaticWave = AudioLab.staticWave(0, 10, 1.0, 0, SINE);
 
 void setup() {
@@ -18,7 +18,6 @@ void setup() {
   AudioLab.init();
 }
 
-unsigned long time_micros = 0;
 void loop() {
   // AudioLab.ready() returns true when synthesis should occur (this returns true at (SAMPLE_RATE / WINDOW_SIZE) times per second)
   if (AudioLab.ready()) {
