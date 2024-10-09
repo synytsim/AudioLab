@@ -62,7 +62,7 @@ void ClassAudioLab::generateAudio() {
   while (_currentNode != NULL) {
     Wave _wavePtr = _currentNode->waveRef;
     _currentNode = _currentNode->next;
-    if (_wavePtr->getAmplitude() == 0 || (_wavePtr->getFrequency() == 0 && _wavePtr->getPhase() == 0)) continue;
+    if (_wavePtr->getAmplitude() == 0 || (_wavePtr->getFrequency() == 0 && _wavePtr->getPhase() == 0) || _wavePtr->getDuration() == 0) continue;
     pushWaveNode(_wavePtr, generateAudioWaveList[_wavePtr->getChannel()]);
   }
 

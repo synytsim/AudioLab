@@ -31,6 +31,7 @@ ClassWave::ClassWave(void) {
   this->amplitude = 0;
   this->phase = 0;
   this->channel = 0;
+  this->duration = 1;
 
   this->_phase = 0;
   //Serial.println("WAVE ADDED");
@@ -82,10 +83,17 @@ void ClassWave::setChannel(uint8_t aChannel)  {
   this->channel = aChannel;
 }
 
+void ClassWave::setDuration(uint16_t aDuration) {
+  if (aDuration < 0) Serial.println("DURATION MUST BE POSITIVE");
+  this->duration = aDuration;
+}
+
 float ClassWave::getFrequency(void) const { return this->frequency; }
 float ClassWave::getAmplitude(void) const { return this->amplitude; }
 float ClassWave::getPhase(void) const { return this->phase; }
 uint8_t ClassWave::getChannel(void) const { return this->channel; }
+
+uint16_t ClassWave::getDuration(void) const { return this->duration; }
 
 WaveType ClassWave::getWaveType(void) const { return this->waveType; }
 

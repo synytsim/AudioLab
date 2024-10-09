@@ -24,6 +24,7 @@ class ClassWave
     float frequency;
     float amplitude;
     float phase;
+    uint16_t duration;
     
     int _phase;
 
@@ -46,11 +47,13 @@ class ClassWave
     void setAmplitude(float anAmplitude);
     void setPhase(float aPhase);
     void setChannel(uint8_t aChannel);
+    void setDuration(uint16_t aDuration);
 
     float getFrequency() const;
     float getAmplitude() const;
     float getPhase() const;
     uint8_t getChannel() const;
+    uint16_t getDuration() const;
 
     WaveType getWaveType() const;
 

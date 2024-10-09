@@ -10,7 +10,7 @@
 #define IN_PIN_CH1 A2
 #define IN_PIN_CH2 A3
 
-#define NUM_OUT_CH 2 
+#define NUM_OUT_CH 2
 
 #define OUT_PIN_CH1 A0
 #define OUT_PIN_CH2 A1
