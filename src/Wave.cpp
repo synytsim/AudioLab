@@ -20,11 +20,15 @@ const unsigned long MaxGlobalTimeIndexWindow = MaxGlobalTimeIndex - WINDOW_SIZE;
 
 // used for debugging / printing waves
 const char* getWaveName(WaveType aWaveType) {
-  static const char* const names[] = {
+  static const char* const waveNames[] = {
     "SINE", "COSINE", "SQUARE", "SAWTOOTH", "TRIANGLE"
   };
-  return names[aWaveType];
+  return waveNames[aWaveType];
 }
+
+/*
+  PARENT CLASS: Sine, Cosine, Square, Triangle, Sawtooth
+*/
 
 ClassWave::ClassWave(void) {
   this->frequency = 0;
@@ -32,26 +36,32 @@ ClassWave::ClassWave(void) {
   this->phase = 0;
   this->channel = 0;
   this->duration = 1;
+  this->mapping = 1;
+  this->mappingWeight = 1.0;
 
   this->_phase = 0;
-  //Serial.println("WAVE ADDED");
+  // Serial.println("WAVE ADDED");
 }
 
 ClassWave::~ClassWave(void) {
-  //Serial.println("WAVE REMOVED");
+  // Serial.println("WAVE REMOVED");
 }
 
-void ClassWave::set(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase) {
+void ClassWave::set(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, uint16_t aDuration, float aMappingWeight) {
   this->channel = aChannel;
   this->frequency = aFrequency;
   this->amplitude = anAmplitude;
   this->phase = aPhase;
+  this->duration = aDuration;
+  this->mappingWeight = aMappingWeight;
 }
 
 void ClassWave::reset() {
   this->frequency = 0;
   this->amplitude = 0;
   this->phase = 0;
+  this->duration = 1;
+  this->mappingWeight = 1.0;
 }
 
 void ClassWave::setFrequency(float aFrequency) { 
@@ -84,7 +94,10 @@ void ClassWave::setChannel(uint8_t aChannel)  {
 }
 
 void ClassWave::setDuration(uint16_t aDuration) {
-  if (aDuration < 0) Serial.println("DURATION MUST BE POSITIVE");
+  if (aDuration < 0) {
+    Serial.println("DURATION MUST BE POSITIVE");
+    return;
+  }
   this->duration = aDuration;
 }
 
@@ -94,6 +107,16 @@ float ClassWave::getPhase(void) const { return this->phase; }
 uint8_t ClassWave::getChannel(void) const { return this->channel; }
 
 uint16_t ClassWave::getDuration(void) const { return this->duration; }
+
+void ClassWave::enableMapping(void) { this->mapping = 1; }
+
+void ClassWave::disableMapping(void) { this->mapping = 0; }
+
+bool ClassWave::checkMappingEnabled(void) const { return this->mapping; }
+
+void ClassWave::setMappingWeight(float weight) { this->mappingWeight = weight; }
+
+float ClassWave::getMappingWeight(void) const { return this->mappingWeight; }
 
 WaveType ClassWave::getWaveType(void) const { return this->waveType; }
 
@@ -113,7 +136,12 @@ void ClassWave::synchronizeTimeIndex(void) {
     GlobalTimeIndex = MaxGlobalTimeIndexWindow;
     return;
   }
-  GlobalTimeIndex -= WINDOW_SIZE; }
+  GlobalTimeIndex -= WINDOW_SIZE; 
+}
+
+/*
+  CHILD CLASSES: Sine, Cosine, Square, Triangle, Sawtooth
+*/
 
 Sine::Sine() { this->waveType = SINE; }
 
