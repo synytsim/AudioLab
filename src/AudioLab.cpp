@@ -49,6 +49,11 @@ bool ClassAudioLab::ready(void) {
 
   // reset/synchronize input and output indexes to continue sampling
   SYNC_AUD_IN_OUT_IDX();
+
+  // free generateAudioWaveList
+  for (int c = 0; c < NUM_OUT_CH; c++) {
+    freeWaveList(generateAudioWaveList[c]);
+  }
   
   // remove dynamic waves
   removeDynamicWaves();
@@ -62,24 +67,31 @@ void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
 
   float _amplitudeSum = 0.0;
 
+  //Serial.println("0");
+
   WaveNode* current = globalWaveList;
+  // if (current == NULL) return;
   while (current != NULL) {
-    if (current->waveRef->getChannel() == aChannel) {
+    if (current->waveRef->getChannel() == aChannel && current->waveRef->checkMappingEnabled() && current->waveRef->getDuration() > 0) {
       _amplitudeSum += current->waveRef->getAmplitude();
     }
     current = current->next;
   }
+
+  //Serial.println("1");
 
   if (_amplitudeSum == 0.0) return;
   float _divideBy = 1.0 / (_amplitudeSum > aMin ? _amplitudeSum : aMin);
 
   current = globalWaveList;
   while (current != NULL) {
-    if (current->waveRef->getChannel() == aChannel) {
-      current->waveRef->setAmplitude(current->waveRef->getAmplitude() * _divideBy);
+    if (current->waveRef->getChannel() == aChannel && current->waveRef->checkMappingEnabled() && current->waveRef->getDuration() > 0) {
+      current->waveRef->setAmplitude(current->waveRef->getAmplitude() * current->waveRef->getMappingWeight() * _divideBy);
     }
     current = current->next;
   }
+
+  // Serial.println("2");
 }
 
 void ClassAudioLab::synthesize(void) {
@@ -164,23 +176,33 @@ void ClassAudioLab::changeWaveType(Wave& aWave, WaveType aWaveType) {
 
 int *ClassAudioLab::getInputBuffer(uint8_t aChannel) {
   if (!(aChannel >= 0 && aChannel < NUM_IN_CH)) {
-    Serial.printf("INVALID INPUT CHANNEL %d, USE RANGE BETWEEN [0..NUM_IN_CH)\r\n", aChannel);
+    // DBG_printf("INVALID INPUT CHANNEL %d, USE RANGE BETWEEN [0..NUM_IN_CH)\r\n", aChannel);
     return NULL;
   }
   return inputBuffer[aChannel];
 }
 
 void ClassAudioLab::printWaves(void) {
+  bool _return = 1;
+  WaveNode* _currentNode = globalWaveList;
+  while (_currentNode != NULL) {
+    Wave _wavePtr = _currentNode->waveRef;
+    _currentNode = _currentNode->next;
+    if (_wavePtr->getAmplitude() > 0.0  && _wavePtr->getFrequency() > 0.0 && _wavePtr->getDuration() > 0) _return = 0;
+  }
+
+  if (_return) return;
+
   Serial.println("Printing waves (WaveType, Frequency, Amplitude, Phase)");
   for (int c = 0; c < NUM_OUT_CH; c++) {
-    WaveNode* _currentNode = globalWaveList;
+    _currentNode = globalWaveList;
     Serial.printf("Channel %d: ", c);
     while (_currentNode != NULL) {
       Wave _wavePtr = _currentNode->waveRef;
       _currentNode = _currentNode->next;
 
       if (_wavePtr->getChannel() != c) continue;
-      if (_wavePtr->getAmplitude() == 0.0 || _wavePtr->getFrequency() == 0.0) continue;
+      if (_wavePtr->getAmplitude() == 0.0 || _wavePtr->getFrequency() == 0.0 || _wavePtr->getDuration() == 0) continue;
 
       // Serial.printf("(%s, %.2f, %.2f, %.2f)  ", getWaveName(_wavePtr->getWaveType()), double(_wavePtr->getFrequency()), double(_wavePtr->getAmplitude()), double(_wavePtr->getPhase()));
       Serial.print("(");

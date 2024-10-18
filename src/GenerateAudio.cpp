@@ -62,7 +62,7 @@ void ClassAudioLab::generateAudio() {
   while (_currentNode != NULL) {
     Wave _wavePtr = _currentNode->waveRef;
     _currentNode = _currentNode->next;
-    if (_wavePtr->getAmplitude() == 0 || (_wavePtr->getFrequency() == 0 && _wavePtr->getPhase() == 0)) continue;
+    if (_wavePtr->getDuration() == 0 || _wavePtr->getAmplitude() == 0 || (_wavePtr->getFrequency() == 0 && _wavePtr->getPhase() == 0)) continue;
     pushWaveNode(_wavePtr, generateAudioWaveList[_wavePtr->getChannel()]);
   }
 
@@ -76,7 +76,7 @@ void ClassAudioLab::generateAudio() {
 
     // copy final, synthesized values to volatile audio output buffer
     if (i < AUD_IN_BUFFER_SIZE) {
-      // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between 0 - 255
+      // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between and DAC_MAX
       for (int c = 0; c < NUM_OUT_CH; c++) {
         AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = max(0, min(DAC_MAX, int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID))));
       }
@@ -104,9 +104,4 @@ void ClassAudioLab::generateAudio() {
   // generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_IN_BUFFER_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
   generateAudioBufferIdx = int(generateAudioBufferIdx + AUD_OUT_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
   ClassWave::synchronizeTimeIndex();
-
-  // free generateAudioWaveList
-  for (int c = 0; c < NUM_OUT_CH; c++) {
-    freeWaveList(generateAudioWaveList[c]);
-  }
 }

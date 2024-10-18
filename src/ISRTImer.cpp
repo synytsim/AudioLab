@@ -34,17 +34,17 @@ SAMDTimer SAMPLING_TIMER(TIMER_TC3);
 void ClassAudioLab::initISR(void) {
   // setup timer interrupt for sampling
   SAMPLING_TIMER.attachInterruptInterval(sampleDelayTime, ClassAudioLab::blankFunction);   // enable interrupt
-  SAMPLING_TIMER.detachInterrupt();    
-  SAMPLING_TIMER.restartTimer();
+  SAMPLING_TIMER.detachInterrupt();
 }
 
 void ClassAudioLab::pauseSampling(void) {
-  SAMPLING_TIMER.detachInterrupt();    
-  SAMPLING_TIMER.restartTimer();
+  //SAMPLING_TIMER.restartTimer();
+  SAMPLING_TIMER.detachInterrupt();
 }
 
 void ClassAudioLab::resumeSampling(void) {
   SAMPLING_TIMER.attachInterruptInterval(sampleDelayTime, ClassAudioLab::AUD_IN_OUT);   // enable interrupt
+  SAMPLING_TIMER.restartTimer();
 }
 
 #endif
