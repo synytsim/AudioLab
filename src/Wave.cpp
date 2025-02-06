@@ -1,12 +1,12 @@
 #include "Wave.h"
 
 // sine wave table
-float StaticSineWave[SAMPLE_RATE];
+float StaticSineWave[AUD_OUT_SAMPLE_RATE];
 bool StaticSineWaveInitialzed = 0;
 
 // various constansts for wave value calculations
-const float INVERSE_SAMPLE_RATE = 1.0 / SAMPLE_RATE;
-const int NYQUIST = int(SAMPLE_RATE) >> 1;
+const float INVERSE_SAMPLE_RATE = 1.0 / AUD_OUT_SAMPLE_RATE;
+const int NYQUIST = int(AUD_OUT_SAMPLE_RATE) >> 1;
 const int WAVE_OFFSET = NYQUIST >> 1;
 
 // minimum float point frequency 
@@ -15,8 +15,8 @@ const float MAX_FLOAT_PRECISION = 0.01;
 // global time index (increments at SAMPLE_RATE Hz)
 unsigned long GlobalTimeIndex = 0;
 
-const unsigned long MaxGlobalTimeIndex = SAMPLE_RATE / MAX_FLOAT_PRECISION;
-const unsigned long MaxGlobalTimeIndexWindow = MaxGlobalTimeIndex - WINDOW_SIZE;
+const unsigned long MaxGlobalTimeIndex = AUD_OUT_SAMPLE_RATE / MAX_FLOAT_PRECISION;
+const unsigned long MaxGlobalTimeIndexWindow = MaxGlobalTimeIndex - AUD_OUT_WINDOW_SIZE;
 
 // used for debugging / printing waves
 const char* getWaveName(WaveType aWaveType) {
@@ -82,7 +82,7 @@ void ClassWave::setPhase(float aPhase) {
     return;
   }
   this->phase = aPhase;
-  this->_phase = int(round(this->phase * SAMPLE_RATE));
+  this->_phase = int(round(this->phase * AUD_OUT_SAMPLE_RATE));
 }
 
 void ClassWave::setChannel(uint8_t aChannel)  {
@@ -105,7 +105,6 @@ float ClassWave::getFrequency(void) const { return this->frequency; }
 float ClassWave::getAmplitude(void) const { return this->amplitude; }
 float ClassWave::getPhase(void) const { return this->phase; }
 uint8_t ClassWave::getChannel(void) const { return this->channel; }
-
 uint16_t ClassWave::getDuration(void) const { return this->duration; }
 
 void ClassWave::enableMapping(void) { this->mapping = 1; }
@@ -123,8 +122,8 @@ WaveType ClassWave::getWaveType(void) const { return this->waveType; }
 void ClassWave::calculateSineWave(void) {
   if (StaticSineWaveInitialzed) return;
   StaticSineWaveInitialzed = 1;
-  float _resolution = 2.0 * PI / SAMPLE_RATE;
-  for (int x = 0; x < SAMPLE_RATE; x++) {
+  float _resolution = 2.0 * PI / AUD_OUT_SAMPLE_RATE;
+  for (int x = 0; x < AUD_OUT_SAMPLE_RATE; x++) {
     StaticSineWave[x] = sin(_resolution * x);
   }
 }
@@ -136,7 +135,7 @@ void ClassWave::synchronizeTimeIndex(void) {
     GlobalTimeIndex = MaxGlobalTimeIndexWindow;
     return;
   }
-  GlobalTimeIndex -= WINDOW_SIZE; 
+  GlobalTimeIndex -= AUD_OUT_WINDOW_SIZE; 
 }
 
 /*
@@ -147,7 +146,7 @@ Sine::Sine() { this->waveType = SINE; }
 
 float Sine::getWaveValue() const {;
   float _timeValue = (GlobalTimeIndex * frequency + _phase) * INVERSE_SAMPLE_RATE;
-  int _timeIdx = (_timeValue - floor(_timeValue)) * SAMPLE_RATE;
+  int _timeIdx = (_timeValue - floor(_timeValue)) * AUD_OUT_SAMPLE_RATE;
   return amplitude * StaticSineWave[_timeIdx];
 }
 
@@ -155,7 +154,7 @@ Cosine::Cosine() { this->waveType = COSINE; }
 
 float Cosine::getWaveValue() const {
   float _timeValue = (GlobalTimeIndex * frequency + _phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
-  int _timeIdx = (_timeValue - floor(_timeValue)) * SAMPLE_RATE;
+  int _timeIdx = (_timeValue - floor(_timeValue)) * AUD_OUT_SAMPLE_RATE;
   return amplitude * StaticSineWave[_timeIdx];
 }
 

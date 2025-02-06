@@ -8,7 +8,8 @@ typedef ClassWave* Wave;
 
 class ClassAudioLab
 {
-  private:
+  private:    
+
     // constructor for AudioLab
     ClassAudioLab();
 
@@ -79,8 +80,8 @@ class ClassAudioLab
 
     // input, output and generate audio buffer sizes
     static const int AUD_IN_BUFFER_SIZE = WINDOW_SIZE;
-    static const int AUD_OUT_BUFFER_SIZE = WINDOW_SIZE * 2;
-    static const int GEN_AUD_BUFFER_SIZE = WINDOW_SIZE * 3;
+    static const int AUD_OUT_BUFFER_SIZE = AUD_OUT_WINDOW_SIZE * 2;
+    static const int GEN_AUD_BUFFER_SIZE = AUD_OUT_WINDOW_SIZE * 3;
 
     // generate audio buffers
     static float generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
@@ -91,8 +92,8 @@ class ClassAudioLab
 
     volatile static int AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
     volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
-
-    #ifdef ARDUINO_FEATHER_ESP32
+  
+    #if defined(ESP32)
     // function that gets called when timer is triggered
     static void ARDUINO_ISR_ATTR AUD_IN_OUT(void);
     // returns true when input buffer is full
@@ -204,6 +205,8 @@ class ClassAudioLab
      *
      */
     void printWaves();
+
+    void printAudioOutputBuffer(uint8_t aChannel);
 
     /**
      * pauses input and output sampling by disabled timer interrupt
