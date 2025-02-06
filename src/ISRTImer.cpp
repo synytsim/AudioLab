@@ -2,7 +2,7 @@
 
 const int sampleDelayTime = 1000000 / SAMPLE_RATE;
 
-#if defined(ARDUINO_FEATHER_ESP32)
+#if defined(ESP32)
 
 hw_timer_t *SAMPLING_TIMER = NULL;
 
@@ -38,8 +38,8 @@ void ClassAudioLab::initISR(void) {
 }
 
 void ClassAudioLab::pauseSampling(void) {
-  //SAMPLING_TIMER.restartTimer();
   SAMPLING_TIMER.detachInterrupt();
+  SAMPLING_TIMER.restartTimer();
 }
 
 void ClassAudioLab::resumeSampling(void) {
