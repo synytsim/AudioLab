@@ -3,16 +3,20 @@
 
 #define DEBUG
 
+#ifndef SAMPLE_RATE
 #define SAMPLE_RATE 8192
+#endif // SAMPLE_RATE
 
-#define WINDOW_SIZE 128
+#ifndef WINDOW_SIZE
+#define WINDOW_SIZE 256
+#endif // WINDOW_SIZE
 
 #define NUM_IN_CH 1
 
 #define IN_PIN_CH1 A2
 #define IN_PIN_CH2 A3
 
-#define NUM_OUT_CH 1
+#define NUM_OUT_CH 2
 
 #define OUT_PIN_CH1 A0
 #define OUT_PIN_CH2 A1
@@ -36,6 +40,5 @@
 // #define DBG_println(...) NULL
 // #define DBG_printf(...) NULL
 // #endif
-
 
 #endif
