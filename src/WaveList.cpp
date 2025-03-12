@@ -72,7 +72,7 @@ void ClassAudioLab::removeDynamicWaves(void) {
     _currentNode = _currentNode->next;
 
     uint16_t _thisNodeWaveDuration = _thisNode->waveRef->getDuration();
-    if (_thisNode->waveRef->getDuration() > 0) {
+    if (_thisNodeWaveDuration > 0) {
       _thisNode->waveRef->setDuration(_thisNodeWaveDuration - 1);
       continue;
     }

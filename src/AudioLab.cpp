@@ -19,7 +19,13 @@ void ClassAudioLab::init(void) {
 
   float _sampleDelay = 1000000 / SAMPLE_RATE;
 
-  Serial.printf("SAMPLE RATE: %d Hz    WINDOW SIZE: %d    CONTROL RATE: ", SAMPLE_RATE, WINDOW_SIZE);
+  Serial.print("SAMPLE RATE: ");
+  Serial.print(SAMPLE_RATE);
+  Serial.print(" Hz    AUD OUT SAMPLE RATE: ");
+  Serial.print(AUD_OUT_SAMPLE_RATE);
+  Serial.print(" Hz    WINDOW SIZE: ");
+  Serial.print(WINDOW_SIZE);
+  Serial.print("    CONTROL RATE: ");
   Serial.print(float(SAMPLE_RATE) / WINDOW_SIZE, 2);
   Serial.print(" Hz    TIME PER WINDOW: ");
   Serial.print(_sampleDelay * WINDOW_SIZE * 0.001, 2);
@@ -114,6 +120,7 @@ Wave ClassAudioLab::getNewWave(uint8_t aChannel, float aFrequency, float anAmpli
   _newWave->setChannel(aChannel);
   _newWave->setFrequency(aFrequency);
   _newWave->setAmplitude(anAmplitude);
+  _newWave->setDuration(1);
   _newWave->setPhase(aPhase);
 
   if (_error) {
