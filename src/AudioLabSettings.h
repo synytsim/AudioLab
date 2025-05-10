@@ -3,9 +3,13 @@
 
 #define DEBUG
 
+#ifndef SAMPLE_RATE
 #define SAMPLE_RATE 8192
+#endif // SAMPLE_RATE
 
-#define WINDOW_SIZE 128
+#ifndef WINDOW_SIZE
+#define WINDOW_SIZE 256
+#endif // WINDOW_SIZE
 
 #define AUD_IN_OUT_SAMPLE_RATIO 0 // in powers of 2! (0 = 1:1, 1 = 1:2, 2 = 1:4)
 
@@ -14,13 +18,10 @@
 #define IN_PIN_CH1 A2
 #define IN_PIN_CH2 A3
 
-//#define USING_ADAFRUIT_MCP4728_DAC
-
 #if defined(USING_ADAFRUIT_MCP4728_DAC)
 #define NUM_OUT_CH 4
 #define DAC_RESOLUTION 12
-#else 
-
+#else
 #define NUM_OUT_CH 2
 
 #define OUT_PIN_CH1 A0
@@ -30,14 +31,14 @@
 
 #if defined(ESP32)
 #define ADC_RESOLUTION 12
-    #ifndef DAC_RESOLUTION
-    #define DAC_RESOLUTION 8
-    #endif
+#ifndef DAC_RESOLUTION
+#define DAC_RESOLUTION 8
+#endif
 #elif defined(__SAMD51__)
 #define ADC_RESOLUTION 12
-    #ifndef DAC_RESOLUTION
-    #define DAC_RESOLUTION 12
-    #endif
+#ifndef DAC_RESOLUTION
+#define DAC_RESOLUTION 12
+#endif
 #else
 #error BOARD NOT SUPPORTED
 #endif
