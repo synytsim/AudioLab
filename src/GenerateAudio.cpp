@@ -5,15 +5,16 @@ float ClassAudioLab::generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
 
 ClassAudioLab::WaveNode* ClassAudioLab::generateAudioWaveList[NUM_OUT_CH]; 
 
-int generateAudioBufferIdx = 0;
-int generateAudioOutBufferIdx = 0;
+uint16_t generateAudioBufferIdx = 0;
+uint16_t generateAudioOutBufferIdx = 0;
 
 void ClassAudioLab::resetGenerateAudio() {
   //Serial.printf("%d, %d, %d, %d\n", DAC_MAX, DAC_MID, ADC_MAX, ADC_MID);
   // restore scratch pad buffer values
-  for (int c = 0; c < NUM_OUT_CH; c++) {
+  uint16_t c, i;
+  for (c = 0; c < NUM_OUT_CH; c++) {
     freeWaveList(generateAudioWaveList[c]);
-    for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
+    for (i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
       generateAudioBuffer[c][i] = 0.0;
     }
   }
@@ -79,7 +80,8 @@ void ClassAudioLab::generateAudio() {
     if (i < AUD_OUT_WINDOW_SIZE) {
       // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between and DAC_MAX
       for (c = 0; c < NUM_OUT_CH; c++) {
-        AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = max(0, min(DAC_MAX, int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID))));
+        // AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = max(0, min(DAC_MAX, int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID))));
+        AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID));
       }
       generateAudioOutBufferIdx += 1;
       if (generateAudioOutBufferIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutBufferIdx = 0;

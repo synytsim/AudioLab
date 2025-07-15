@@ -1,6 +1,6 @@
 #include "AudioLab.h"
 
-int ClassAudioLab::inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
+uint16_t ClassAudioLab::inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
 
 ClassAudioLab::ClassAudioLab() {
   initAudio();
@@ -47,8 +47,9 @@ bool ClassAudioLab::ready(void) {
   if (!AUD_IN_BUFFER_FULL()) return false;
 
   // store samples from volatile input buffer to non-volatile buffer
-  for (int c = 0; c < NUM_IN_CH; c++) {
-    for (int i = 0; i < WINDOW_SIZE; i++) {
+  uint16_t c, i;
+  for (c = 0; c < NUM_IN_CH; c++) {
+    for (i = 0; i < WINDOW_SIZE; i++) {
       inputBuffer[c][i] = AUD_IN_BUFFER[c][i];
     }
   }
@@ -57,7 +58,7 @@ bool ClassAudioLab::ready(void) {
   SYNC_AUD_IN_OUT_IDX();
 
   // free generateAudioWaveList
-  for (int c = 0; c < NUM_OUT_CH; c++) {
+  for (c = 0; c < NUM_OUT_CH; c++) {
     freeWaveList(generateAudioWaveList[c]);
   }
   
@@ -181,7 +182,7 @@ void ClassAudioLab::changeWaveType(Wave& aWave, WaveType aWaveType) {
   aWave = _newWave;
 }
 
-int *ClassAudioLab::getInputBuffer(uint8_t aChannel) {
+uint16_t *ClassAudioLab::getInputBuffer(uint8_t aChannel) {
   if (!(aChannel >= 0 && aChannel < NUM_IN_CH)) {
     // DBG_printf("INVALID INPUT CHANNEL %d, USE RANGE BETWEEN [0..NUM_IN_CH)\r\n", aChannel);
     return NULL;

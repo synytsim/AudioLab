@@ -3,6 +3,7 @@
 
 #include "AudioLabSettings.h"
 #include "Wave.h"
+#include "math.h"
 
 typedef ClassWave* Wave;
 
@@ -72,26 +73,26 @@ class ClassAudioLab
     // linked list storing references to waves the need to be synthesizes (ie amplitude != 0 or frequency and phase != 0)
     static WaveNode* generateAudioWaveList[NUM_OUT_CH]; 
 
-    static const int DAC_MAX = (1 << DAC_RESOLUTION) - 1;
-    static const int DAC_MID = 1 << (DAC_RESOLUTION - 1);
+    static const uint16_t DAC_MAX = (1 << DAC_RESOLUTION) - 1;
+    static const uint16_t DAC_MID = 1 << (DAC_RESOLUTION - 1);
 
-    static const int ADC_MAX = (1 << ADC_RESOLUTION) - 1;
-    static const int ADC_MID = 1 << (ADC_RESOLUTION - 1);
+    static const uint16_t ADC_MAX = (1 << ADC_RESOLUTION) - 1;
+    static const uint16_t ADC_MID = 1 << (ADC_RESOLUTION - 1);
 
     // input, output and generate audio buffer sizes
-    static const int AUD_IN_BUFFER_SIZE = WINDOW_SIZE;
-    static const int AUD_OUT_BUFFER_SIZE = AUD_OUT_WINDOW_SIZE * 2;
-    static const int GEN_AUD_BUFFER_SIZE = AUD_OUT_WINDOW_SIZE * 3;
+    static const uint16_t AUD_IN_BUFFER_SIZE = WINDOW_SIZE;
+    static const uint16_t AUD_OUT_BUFFER_SIZE = AUD_OUT_WINDOW_SIZE * 2;
+    static const uint16_t GEN_AUD_BUFFER_SIZE = AUD_OUT_WINDOW_SIZE * 3;
 
     // generate audio buffers
     static float generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
     static float windowingCosWave[AUD_OUT_BUFFER_SIZE];
 
     // input and output buffers
-    static int inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
+    static uint16_t inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
 
-    volatile static int AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
-    volatile static int AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
+    volatile static uint16_t AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
+    volatile static uint16_t AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
   
     #if defined(ESP32)
     // function that gets called when timer is triggered
@@ -198,7 +199,7 @@ class ClassAudioLab
      *
      * @return read-only pointer to input buffer or NULL if NUM_IN_CH == 0
      */
-    int* getInputBuffer(uint8_t aChannel = 0);
+    uint16_t *getInputBuffer(uint8_t aChannel = 0);
 
     /**
      * Prints the waves that will be synthesized to Serial in format (WaveType, Frequency, Amplitude, Phase)

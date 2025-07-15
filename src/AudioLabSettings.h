@@ -3,11 +3,15 @@
 
 #define DEBUG
 
+#ifndef SAMPLE_RATE
 #define SAMPLE_RATE 8192
+#endif
 
-#define WINDOW_SIZE 128
+#ifndef WINDOW_SIZE
+#define WINDOW_SIZE 64
+#endif
 
-#define AUD_IN_OUT_SAMPLE_RATIO 0 // in powers of 2! (0 = 1:1, 1 = 1:2, 2 = 1:4)
+#define AUD_IN_OUT_SAMPLE_RATIO 0 // in powers of 2 (0 = 1:1, 1 = 1:2, 2 = 1:4)
 
 #define NUM_IN_CH 1
 
@@ -16,16 +20,21 @@
 
 //#define USING_ADAFRUIT_MCP4728_DAC
 
-#if defined(USING_ADAFRUIT_MCP4728_DAC)
+//#define USING_ADAFRUIT_AD5644_DAC
+
+// UNCOMMENT IF USING MCP4728 EXTERNAL DAC
+#if defined(USING_MCP4728_DAC)
 #define NUM_OUT_CH 4
 #define DAC_RESOLUTION 12
-#else 
-
+// UNCOMMENT IF USING AD5644 EXTERNAL DAC
+#elif defined(USING_AD5644_DAC)
+#define NUM_OUT_CH 4
+#define DAC_RESOLUTION 14
+// DEFAULT FEATHER DACS
+#else
 #define NUM_OUT_CH 2
-
 #define OUT_PIN_CH1 A0
 #define OUT_PIN_CH2 A1
-
 #endif
 
 #if defined(ESP32)

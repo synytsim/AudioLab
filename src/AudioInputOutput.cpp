@@ -12,10 +12,10 @@ Adafruit_MCP4728 dac = Adafruit_MCP4728();
 
 #endif
 
-const int SAMPLE_RATIO = 1 << AUD_IN_OUT_SAMPLE_RATIO;
+const uint16_t SAMPLE_RATIO = 1 << AUD_IN_OUT_SAMPLE_RATIO;
 
-volatile int ClassAudioLab::AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
-volatile int ClassAudioLab::AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
+volatile uint16_t ClassAudioLab::AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
+volatile uint16_t ClassAudioLab::AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
 
 volatile uint16_t AUD_IN_BUFFER_IDX = 0;
 volatile uint16_t AUD_OUT_BUFFER_IDX = 0;
@@ -69,12 +69,13 @@ void ClassAudioLab::configurePins(void) {
 }
 
 void ClassAudioLab::resetAudInOut(void) {
-  for (int i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
-    for (int c = 0; c < NUM_OUT_CH; c++) {
+  uint16_t i, c;
+  for (i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
+    for (c = 0; c < NUM_OUT_CH; c++) {
       AUD_OUT_BUFFER[c][i] = DAC_MID;
     }
     if (i < AUD_IN_BUFFER_SIZE) {
-      for (int c = 0; c < NUM_IN_CH; c++) {
+      for (c = 0; c < NUM_IN_CH; c++) {
         AUD_IN_BUFFER[c][i] = ADC_MID;
       }
     }
@@ -90,9 +91,9 @@ void ClassAudioLab::AUD_IN_OUT(void) {
   if (AUD_IN_SAMPLE_COUNT == 0) {
     AUD_OUT_BUFFER_IDX = AUD_OUT_BUFFER_POS + (AUD_IN_BUFFER_IDX >> AUD_IN_OUT_SAMPLE_RATIO);
   #if defined(USING_ADAFRUIT_MCP4728_DAC)
-    //noInterrupts();
     dac.fastWrite(AUD_OUT_BUFFER[0][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[1][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[2][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[3][AUD_OUT_BUFFER_IDX]); 
-    //interrupts();
+  // #elif defined(USING_ADAFRUIT_ADXL5644_DAC)
+
   #else 
   
   #if NUM_OUT_CH > 0
@@ -111,8 +112,6 @@ void ClassAudioLab::AUD_IN_OUT(void) {
   #endif
   #endif
   }
-
-
 
   #if NUM_IN_CH > 0
   AUD_IN_BUFFER[0][AUD_IN_BUFFER_IDX] = analogRead(IN_PIN_CH1);
@@ -139,7 +138,7 @@ void ClassAudioLab::SYNC_AUD_IN_OUT_IDX(void) {
 }
 
 void ClassAudioLab::printAudioOutputBuffer(uint8_t aChannel) {
-  for (int s = AUD_OUT_BUFFER_POS; s < AUD_OUT_BUFFER_POS + AUD_OUT_WINDOW_SIZE; s++) {
+  for (uint16_t s = AUD_OUT_BUFFER_POS; s < AUD_OUT_BUFFER_POS + AUD_OUT_WINDOW_SIZE; s++) {
     Serial.println(AUD_OUT_BUFFER[aChannel][s]);
   }
 }
