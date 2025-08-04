@@ -112,6 +112,12 @@ class ClassAudioLab
     static void blankFunction(void);
 
   public:
+
+    #define AUDIOLAB_TEST
+    #ifdef AUDIOLAB_TEST
+    void testSetup();
+    void testLoop();
+    #endif
     // delete assignment operators
     ClassAudioLab(const ClassAudioLab &) = delete;
     ClassAudioLab &operator=(const ClassAudioLab &) = delete;

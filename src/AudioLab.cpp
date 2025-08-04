@@ -74,8 +74,6 @@ void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
 
   float _amplitudeSum = 0.0;
 
-  //Serial.println("0");
-
   WaveNode* current = globalWaveList;
   // if (current == NULL) return;
   while (current != NULL) {
@@ -84,8 +82,6 @@ void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
     }
     current = current->next;
   }
-
-  //Serial.println("1");
 
   if (_amplitudeSum == 0.0) return;
   float _divideBy = 1.0 / (_amplitudeSum > aMin ? _amplitudeSum : aMin);
@@ -97,8 +93,6 @@ void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
     }
     current = current->next;
   }
-
-  // Serial.println("2");
 }
 
 void ClassAudioLab::synthesize(void) {

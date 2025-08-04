@@ -4,33 +4,28 @@
 #define DEBUG
 
 #ifndef SAMPLE_RATE
-#define SAMPLE_RATE 8192
+#define SAMPLE_RATE 16384
 #endif
 
 #ifndef WINDOW_SIZE
-#define WINDOW_SIZE 64
+#define WINDOW_SIZE 256
 #endif
 
-#define AUD_IN_OUT_SAMPLE_RATIO 0 // in powers of 2 (0 = 1:1, 1 = 1:2, 2 = 1:4)
-
-#define NUM_IN_CH 1
+#define NUM_IN_CH 1         // Number of input channels to sample
 
 #define IN_PIN_CH1 A2
 #define IN_PIN_CH2 A3
 
-//#define USING_ADAFRUIT_MCP4728_DAC
+#define USING_AD5644_DAC    // Uncomment if using AD5644 SPI DAC
 
-//#define USING_ADAFRUIT_AD5644_DAC
-
-// UNCOMMENT IF USING MCP4728 EXTERNAL DAC
-#if defined(USING_MCP4728_DAC)
-#define NUM_OUT_CH 4
-#define DAC_RESOLUTION 12
-// UNCOMMENT IF USING AD5644 EXTERNAL DAC
-#elif defined(USING_AD5644_DAC)
+// AD5644 SPI DAC
+#if defined(USING_AD5644_DAC)
 #define NUM_OUT_CH 4
 #define DAC_RESOLUTION 14
-// DEFAULT FEATHER DACS
+#define DAC_PIN_SS 33
+// #define AUD_IN_OUT_SAMPLE_RATIO 2       // Uncomment to write to each channel at (SAMPLE_RATE >> AUD_IN_OUT_SAMPLE_RATIO) Hz
+
+// Default Feather DACs
 #else
 #define NUM_OUT_CH 2
 #define OUT_PIN_CH1 A0
@@ -48,7 +43,13 @@
     #define DAC_RESOLUTION 12
     #endif
 #else
-#error BOARD NOT SUPPORTED
+#error BOARD NOT SUPPORTED/TESTED   // comment out for testing with other boards
+#define ADC_RESOLUTION 12
+#define DAC_RESOLUTION 12
+#endif
+
+#ifndef AUD_IN_OUT_SAMPLE_RATIO
+#define AUD_IN_OUT_SAMPLE_RATIO 0 // in powers of 2 (0 = 1:1, 1 = 1:2, 2 = 1:4)
 #endif
 
 const int AUD_OUT_SAMPLE_RATE = int(SAMPLE_RATE) >> AUD_IN_OUT_SAMPLE_RATIO;

@@ -6,6 +6,7 @@ float ClassAudioLab::generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
 ClassAudioLab::WaveNode* ClassAudioLab::generateAudioWaveList[NUM_OUT_CH]; 
 
 uint16_t generateAudioBufferIdx = 0;
+// uint16_t generateAudioBufferIdx[NUM_OUT_CH];
 uint16_t generateAudioOutBufferIdx = 0;
 
 void ClassAudioLab::resetGenerateAudio() {
@@ -78,7 +79,7 @@ void ClassAudioLab::generateAudio() {
 
     // copy final, synthesized values to volatile audio output buffer
     if (i < AUD_OUT_WINDOW_SIZE) {
-      // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between and DAC_MAX
+      // shifting output to between 0 and DAC_MAX
       for (c = 0; c < NUM_OUT_CH; c++) {
         // AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = max(0, min(DAC_MAX, int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID))));
         AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID));
