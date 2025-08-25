@@ -14,17 +14,17 @@ void ClassAudioLab::initISR(void) {
   //timerStart(SAMPLING_TIMER);
 }
 
-void ClassAudioLab::pauseSampling(void) {
-  //timerStart(SAMPLING_TIMER);  // disable interrupt
-  timerDetachInterrupt(SAMPLING_TIMER);
-}
+// void ClassAudioLab::pauseSampling(void) {
+//   //timerStart(SAMPLING_TIMER);  // disable interrupt
+//   timerDetachInterrupt(SAMPLING_TIMER);
+// }
 
-void ClassAudioLab::resumeSampling(void) {
-  //timerStop(SAMPLING_TIMER);   // enable interrupt
-  //timerRestart(SAMPLING_TIMER);
-  timerAlarm(SAMPLING_TIMER, sampleDelayTime, true, 0);        // trigger interrupt every sampleDelayTime microseconds
-  timerAttachInterrupt(SAMPLING_TIMER, &AUD_IN_OUT);
-}
+// void ClassAudioLab::resumeSampling(void) {
+//   //timerStop(SAMPLING_TIMER);   // enable interrupt
+//   //timerRestart(SAMPLING_TIMER);
+//   timerAlarm(SAMPLING_TIMER, sampleDelayTime, true, 0);        // trigger interrupt every sampleDelayTime microseconds
+//   timerAttachInterrupt(SAMPLING_TIMER, &AUD_IN_OUT);
+// }
 
 #elif defined(__SAMD51__)
 

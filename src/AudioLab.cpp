@@ -32,7 +32,7 @@ void ClassAudioLab::init(void) {
   Serial.println(" ms");
 
   delay(1000);
-  initISR();
+  // initISR();
 
   Serial.println("AudioLab setup complete");
   

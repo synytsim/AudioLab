@@ -11,19 +11,22 @@
 #define WINDOW_SIZE 256
 #endif
 
-#define NUM_IN_CH 1         // Number of input channels to sample
+#define NUM_IN_CH 2         // Number of input channels to sample
 
 #define IN_PIN_CH1 A2
 #define IN_PIN_CH2 A3
 
-#define USING_AD5644_DAC    // Uncomment if using AD5644 SPI DAC
+#define USING_AD56X4_DAC    // Uncomment if using AD5644 SPI DAC
 
 // AD5644 SPI DAC
-#if defined(USING_AD5644_DAC)
-#define NUM_OUT_CH 4
-#define DAC_RESOLUTION 14
-#define DAC_PIN_SS 33
-// #define AUD_IN_OUT_SAMPLE_RATIO 2       // Uncomment to write to each channel at (SAMPLE_RATE >> AUD_IN_OUT_SAMPLE_RATIO) Hz
+#if defined(USING_AD56X4_DAC)
+#define DAC_RESOLUTION 16   // The AD56X4 comes in 3 versions: 12, 14 and 16 bit
+// #define NUM_OUT_CH 4     // Uncomment if using 1xAD56X4 SPI DAC
+#define NUM_OUT_CH 8        // Uncomment if using 2xAD56X 4 SPI DAC
+#define DAC_PIN_SS_1 33     // Slave select pin for first AD56X4 
+#define DAC_PIN_SS_2 32     // Slave select pin for second AD56X4 
+
+#define AUD_IN_OUT_SAMPLE_RATIO 2       // Uncomment to write to each channel at (SAMPLE_RATE >> AUD_IN_OUT_SAMPLE_RATIO) Hz
 
 // Default Feather DACs
 #else
