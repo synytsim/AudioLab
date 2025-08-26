@@ -10,7 +10,6 @@ uint16_t generateAudioBufferIdx = 0;
 uint16_t generateAudioOutBufferIdx = 0;
 
 void ClassAudioLab::resetGenerateAudio() {
-  //Serial.printf("%d, %d, %d, %d\n", DAC_MAX, DAC_MID, ADC_MAX, ADC_MID);
   // restore scratch pad buffer values
   uint16_t c, i;
   for (c = 0; c < NUM_OUT_CH; c++) {
@@ -59,71 +58,13 @@ float ClassAudioLab::getSumOfChannel(uint8_t aChannel) {
     _sum += _currentNode->waveRef->getWaveValue();
     _currentNode = _currentNode->next;
   }
-  // multiplying 
-  // return _sum * (DAC_MID - 1);
   return _sum;
 }
 
 /*
-void ClassAudioLab::generateAudio() {
-  uint16_t c, i, _generateAudioBufferIdxCpy;
-
-  // copy wave pointers for waves which should be synthesized from StaticWaveList to generateAudioWaveList
-  WaveNode* _currentNode = globalWaveList;
-  while (_currentNode != NULL) {
-    Wave _wavePtr = _currentNode->waveRef;
-    _currentNode = _currentNode->next;
-    if (_wavePtr->getDuration() == 0 || _wavePtr->getAmplitude() == 0 || (_wavePtr->getFrequency() == 0 && _wavePtr->getPhase() == 0)) continue;
-    pushWaveNode(_wavePtr, generateAudioWaveList[_wavePtr->getChannel()]);
-  }
-
-  // calculate values for audio output buffer
-  for (i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
-    // sum together the sine waves for all channels
-    for (c = 0; c < NUM_OUT_CH; c++) {
-      // add windowed value to the existing values in scratch pad audio output buffer at this moment in time
-      generateAudioBuffer[c][generateAudioBufferIdx] += getSumOfChannel(c) * windowingCosWave[i];
-    }
-
-    // copy final, synthesized values to volatile audio output buffer
-    if (i < AUD_OUT_WINDOW_SIZE) {
-      // shifting output to between 0 and DAC_MAX
-      for (c = 0; c < NUM_OUT_CH; c++) {
-        // AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = max(0, min(DAC_MAX, int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID))));
-        AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID));
-      }
-      generateAudioOutBufferIdx += 1;
-      if (generateAudioOutBufferIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutBufferIdx = 0;
-    }
-
-    // increment generate audio index
-    generateAudioBufferIdx += 1;
-    if (generateAudioBufferIdx == GEN_AUD_BUFFER_SIZE) generateAudioBufferIdx = 0;
-    // increment time index
-    ClassWave::iterateTimeIndex();
-  }
-  
-  // reset the next window to synthesize new signal
-  _generateAudioBufferIdxCpy = generateAudioBufferIdx;
-  for (i = 0; i < AUD_OUT_WINDOW_SIZE; i++) {
-    for (c = 0; c < NUM_OUT_CH; c++) {
-      generateAudioBuffer[c][_generateAudioBufferIdxCpy] = 0.0;
-    }
-    _generateAudioBufferIdxCpy += 1;
-    if (_generateAudioBufferIdxCpy == GEN_AUD_BUFFER_SIZE) _generateAudioBufferIdxCpy = 0;
-  }
-  // determine the next position in the sine wave table, and scratch pad audio output buffer to counter phase cosine wave
-  // generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_IN_BUFFER_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
-  // generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_OUT_WINDOW_SIZE + AUD_OUT_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
-  generateAudioBufferIdx = int(generateAudioBufferIdx + AUD_OUT_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
-  ClassWave::synchronizeTimeIndex();
-}
-*/
-
-/*
 
 */
-void ClassAudioLab::generateAudio() {
+void ClassAudioLab::synthesize() {
   uint16_t c, i, _generateAudioBufferIdxCpy;
 
   // copy wave pointers for waves which should be synthesized from StaticWaveList to generateAudioWaveList
@@ -177,8 +118,6 @@ void ClassAudioLab::generateAudio() {
     if (_generateAudioBufferIdxCpy == GEN_AUD_BUFFER_SIZE) _generateAudioBufferIdxCpy = 0;
   }
   // determine the next position in the sine wave table, and scratch pad audio output buffer to counter phase cosine wave
-  // generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_IN_BUFFER_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
-  // generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_OUT_WINDOW_SIZE + AUD_OUT_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
   generateAudioBufferIdx = int(generateAudioBufferIdx + AUD_OUT_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
   ClassWave::synchronizeTimeIndex();
 }

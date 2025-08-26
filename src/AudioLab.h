@@ -1,5 +1,5 @@
-#ifndef AudioLab_h
-#define AudioLab_h
+#ifndef AUDIOLAB_H
+#define AUDIOLAB_H
 
 #include "AudioLabSettings.h"
 #include "Wave.h"
@@ -10,15 +10,8 @@ typedef ClassWave* Wave;
 class ClassAudioLab
 {
   private:    
-
-    // constructor for AudioLab
-    ClassAudioLab();
-
     // initialize audio input and output
     void initAudio();
-
-    // initialize timer interrupt
-    void initISR();
 
     // configure input and output pins
     void configurePins();
@@ -31,9 +24,6 @@ class ClassAudioLab
 
     // returns the sum of a channel
     float getSumOfChannel(uint8_t aChannel);
-
-    // generate one window of signal
-    void generateAudio();
 
     // reset generate audio, this is only called during certain events such as init() and reset()
     void resetGenerateAudio();
@@ -94,17 +84,10 @@ class ClassAudioLab
     volatile static uint16_t AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
     volatile static uint16_t AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
   
-    #if defined(ESP32)
     // function that gets called when timer is triggered
     static void ARDUINO_ISR_ATTR AUD_IN_OUT(void);
     // returns true when input buffer is full
     static bool ARDUINO_ISR_ATTR AUD_IN_BUFFER_FULL(void);
-    #else
-    // function that gets called when timer is triggered
-    static void AUD_IN_OUT(void);
-    // returns true when input buffer is full
-    static bool AUD_IN_BUFFER_FULL(void);
-    #endif
 
     // restores input buffer index and synchronizes audio output buffer
     void SYNC_AUD_IN_OUT_IDX(void);
@@ -112,19 +95,6 @@ class ClassAudioLab
     static void blankFunction(void);
 
   public:
-
-    #define AUDIOLAB_TEST
-    #ifdef AUDIOLAB_TEST
-    void testSetup();
-    void testLoop();
-    #endif
-    // delete assignment operators
-    ClassAudioLab(const ClassAudioLab &) = delete;
-    ClassAudioLab &operator=(const ClassAudioLab &) = delete;
-
-    // returns singleton instance of AudioLab
-    static ClassAudioLab &getInstance();
-
     /**
      * Initalize AudioLab, configure pins and timer
      */
@@ -227,6 +197,6 @@ class ClassAudioLab
 
 };
 
-extern ClassAudioLab &AudioLab;
+extern ClassAudioLab AudioLab;
 
 #endif

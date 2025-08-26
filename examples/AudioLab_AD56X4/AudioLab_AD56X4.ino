@@ -5,21 +5,26 @@
 
 #include <AudioLab.h>
 
+#define SAMPLING_DURATION_TIMING_TEST   // Uncomment the following line to perform sampling speed test
+#define SYNTHESIS_TIMING_TEST           // uncomment for speed test of synthesis + sampling
+#define TIMING_AVERAGE_COUNT 16         // Number of windows to average speed tests over
+uint8_t timingAverageCount = 0;
+uint32_t samplingDurationSum = 0;
+uint32_t synthesisDurationSum = 0;
+
 Wave waves[NUM_OUT_CH];
 
-float frequency = 100;
+// variables for storing channel, frequency, and amplitude
 int channel = 0; 
+float frequency = 25;
+float amplitude = 0.5;
 
-uint8_t waveCount = 0;
-
-
-uint32_t microsTime = 0;
-uint32_t microsTime0 = 0;
-uint32_t prevMicrosTime = 0;
+// for timing experiments
+uint32_t microsTimeSampling = 0;
+uint32_t prevMicrosTimeSampling = 0;
+uint32_t microsTimeSynth = 0;
 
 void setup() {
-  // put your setup code here, to run once:
-
   Serial.begin(115200);
 
   delay(2000);
@@ -28,48 +33,76 @@ void setup() {
 
   AudioLab.init();
 
+  // Setting waves to some initial frequency and amplitude
   for (int i = 0; i < NUM_OUT_CH; i++) {
-    waves[i]= AudioLab.staticWave(i, (i + 1) * 25, 0.5);
-  } 
-
-  microsTime = micros();
-
+    waves[i]= AudioLab.staticWave(i, frequency * (i + 1), amplitude);
+  }
 }
 
 void loop() {
   if (!AudioLab.ready()) return;
 
-  // Uncomment the three following lines to perform speed test (gives total duration of sampling WINDOW_SIZE samples including sample delay)
-  // prevMicrosTime = microsTime;
-  // microsTime = micros();
-  // Serial.println(microsTime - prevMicrosTime);
+  #ifdef SAMPLING_DURATION_TIMING_TEST
+  prevMicrosTimeSampling = microsTimeSampling;
+  microsTimeSampling = micros();
+  samplingDurationSum += microsTimeSampling - prevMicrosTimeSampling;
+  #endif
 
-  // change frequency on channel by typing "{channel} {frequency}" into serial monitor i.e. "0 100" will set wave on channel 0 to 100 Hz
+  // change frequency on channel by typing "{channel} {frequency} {amplitude" into serial monitor 
+  // (i.e. "0 100 1.0" will set wave on channel 0 to 100 Hz and max amplitude)
   if (Serial.available()) {
-    int prevChannel = channel;
-
+    
     channel = Serial.parseInt();
-    if (!Serial.available())
-      frequency = 0;
-    else 
-      frequency = Serial.parseFloat();
-
+    frequency = Serial.parseFloat();
+    amplitude = Serial.parseFloat();
     Serial.read();
 
-    Serial.println(channel);
-    Serial.println(frequency);
+    Serial.print("channel: ");
+    Serial.print(channel);
+    Serial.print("\tfrequency: ");
+    Serial.print(frequency);
+    Serial.print("\tamplitude: ");
+    Serial.println(amplitude);
 
-    if (channel > -1 && channel < NUM_OUT_CH) {
-      if (frequency > 0) waves[channel]->setFrequency(frequency);
-    } else channel = prevChannel;
+    waves[channel]->setFrequency(frequency);
+    waves[channel]->setAmplitude(amplitude);
   }
 
+  // incrementing duration for each wave (by window basis)
   for (int i = 0; i < NUM_OUT_CH; i++) {
     waves[i]->setDuration(1);
   } 
 
-  // microsTime0 = micros();                  // uncomment for speed test of synthesis + sampling
-  AudioLab.synthesize();
-  // Serial.println(micros() - microsTime0);  // uncomment for speed test of synthesis + sampling
+  #ifdef SYNTHESIS_TIMING_TEST
+  microsTimeSynth = micros();
+  #endif
 
+  AudioLab.synthesize();
+
+  #ifdef SYNTHESIS_TIMING_TEST
+  synthesisDurationSum += micros() -  microsTimeSynth;
+  #endif
+
+  timingAverageCount += 1;
+  if (timingAverageCount == TIMING_AVERAGE_COUNT) {
+  #ifdef SAMPLING_DURATION_TIMING_TEST
+  Serial.print("Sampling duration: ");
+  Serial.print(int(round(1.0 * samplingDurationSum / TIMING_AVERAGE_COUNT)));
+  Serial.print("\tSample rate: ");
+  Serial.print(int(round(1000000.0 * WINDOW_SIZE / (1.0 * samplingDurationSum / TIMING_AVERAGE_COUNT))));
+  #ifdef SYNTHESIS_TIMING_TEST
+  Serial.print("\t");
+  #else
+  Serial.println();
+  #endif
+  #endif
+
+  #ifdef SYNTHESIS_TIMING_TEST
+  Serial.print("Synthesis duration: ");
+  Serial.println(int(round(1.0 * synthesisDurationSum / TIMING_AVERAGE_COUNT)));
+  #endif
+  samplingDurationSum = 0;
+  synthesisDurationSum = 0;
+  timingAverageCount = 0;
+  }
 }
