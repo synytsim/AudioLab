@@ -92,8 +92,6 @@ class ClassAudioLab
     // restores input buffer index and synchronizes audio output buffer
     void SYNC_AUD_IN_OUT_IDX(void);
 
-    static void blankFunction(void);
-
   public:
     /**
      * Initalize AudioLab, configure pins and timer

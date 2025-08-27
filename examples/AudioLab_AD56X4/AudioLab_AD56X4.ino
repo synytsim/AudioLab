@@ -8,6 +8,7 @@
 #define SAMPLING_DURATION_TIMING_TEST   // Uncomment the following line to perform sampling speed test
 #define SYNTHESIS_TIMING_TEST           // uncomment for speed test of synthesis + sampling
 #define TIMING_AVERAGE_COUNT 16         // Number of windows to average speed tests over
+
 uint8_t timingAverageCount = 0;
 uint32_t samplingDurationSum = 0;
 uint32_t synthesisDurationSum = 0;

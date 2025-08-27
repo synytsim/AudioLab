@@ -41,7 +41,8 @@ adc_continuous_data_t *adc_conversion_result = NULL;
 #ifdef USING_AD56X4_DAC
 #include <AD56X4.h>
 byte dac_channel[] = { AD56X4_CHANNEL_A, AD56X4_CHANNEL_B, AD56X4_CHANNEL_C, AD56X4_CHANNEL_D };
-
+#else
+#include <driver/dac.h>
 #endif
 
 const uint16_t SAMPLE_RATIO = 1 << AUD_IN_OUT_SAMPLE_RATIO;
@@ -182,7 +183,7 @@ void ClassAudioLab::AUD_IN_OUT(void) {
  * Returns true when input buffer is filled
  */
 bool ClassAudioLab::AUD_IN_BUFFER_FULL(void) {
-  return !(AUD_IN_BUFFER_IDX < WINDOW_SIZE);
+  return AUD_IN_BUFFER_IDX >= WINDOW_SIZE;
 }
 
 /*

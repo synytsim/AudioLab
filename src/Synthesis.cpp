@@ -84,7 +84,7 @@ void ClassAudioLab::synthesize() {
       generateAudioBuffer[c][generateAudioBufferIdx] += getSumOfChannel(c) * windowingCosWave[i];
 
       // copy final, synthesized values to volatile audio output buffer
-      AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = int(round(generateAudioBuffer[c][generateAudioBufferIdx] * (DAC_MID - 1) + DAC_MID));
+      AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = uint16_t(round(generateAudioBuffer[c][generateAudioBufferIdx] * (DAC_MID - 1) + DAC_MID));
     }
     generateAudioOutBufferIdx += 1;
     if (generateAudioOutBufferIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutBufferIdx = 0;  
