@@ -1,19 +1,11 @@
 #include "AudioLab.h"
 
-int ClassAudioLab::inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
+ClassAudioLab AudioLab;
 
-ClassAudioLab::ClassAudioLab() {
-  initAudio();
-}
-
-ClassAudioLab &ClassAudioLab::getInstance(void) {
-  static ClassAudioLab instance;
-  return instance;
-}
-
-ClassAudioLab &AudioLab = ClassAudioLab::getInstance();
+uint16_t ClassAudioLab::inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
 
 void ClassAudioLab::init(void) {
+  initAudio();
   
   configurePins();
 
@@ -31,10 +23,9 @@ void ClassAudioLab::init(void) {
   Serial.print(_sampleDelay * WINDOW_SIZE * 0.001, 2);
   Serial.println(" ms");
 
-  delay(1000);
-  initISR();
-
   Serial.println("AudioLab setup complete");
+
+  delay(1000);
   
   resumeSampling();
 }
@@ -43,12 +34,17 @@ void ClassAudioLab::init(void) {
 //   return;
 // }
 
+/*
+ * returns true once WINDOW_SIZE samples is sampled but first samples from volatile buffer are copied to non-volatile
+ * buffer, then input and buffer indexes are synchronized and dynamic waves are removed for next synthesis cycle
+ */
 bool ClassAudioLab::ready(void) {
   if (!AUD_IN_BUFFER_FULL()) return false;
 
   // store samples from volatile input buffer to non-volatile buffer
-  for (int c = 0; c < NUM_IN_CH; c++) {
-    for (int i = 0; i < WINDOW_SIZE; i++) {
+  uint16_t c, i;
+  for (c = 0; c < NUM_IN_CH; c++) {
+    for (i = 0; i < WINDOW_SIZE; i++) {
       inputBuffer[c][i] = AUD_IN_BUFFER[c][i];
     }
   }
@@ -57,7 +53,7 @@ bool ClassAudioLab::ready(void) {
   SYNC_AUD_IN_OUT_IDX();
 
   // free generateAudioWaveList
-  for (int c = 0; c < NUM_OUT_CH; c++) {
+  for (c = 0; c < NUM_OUT_CH; c++) {
     freeWaveList(generateAudioWaveList[c]);
   }
   
@@ -67,16 +63,20 @@ bool ClassAudioLab::ready(void) {
   return true;
 }
 
+/*
+ * Takes the sum of amplitudes in a channel and divides by a minimum value but, if the amplitude sum exceeds the minimum 
+ * value they are divided by the sum
+ */
 void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
   if (aChannel < 0 || aChannel >= NUM_OUT_CH) return;
-  if (aMin == 0.0) return;
+  if (aMin == 0.0) return;      // ensure no division by 0
 
   float _amplitudeSum = 0.0;
 
-  //Serial.println("0");
-
   WaveNode* current = globalWaveList;
-  // if (current == NULL) return;
+  if (current == NULL) return;    // return if global wavelist is empty
+
+  // sum up amplitudes from global wavelist
   while (current != NULL) {
     if (current->waveRef->getChannel() == aChannel && current->waveRef->checkMappingEnabled() && current->waveRef->getDuration() > 0) {
       _amplitudeSum += current->waveRef->getAmplitude();
@@ -84,11 +84,12 @@ void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
     current = current->next;
   }
 
-  //Serial.println("1");
+  if (_amplitudeSum == 0.0) return;   // ensure no division by 0
 
-  if (_amplitudeSum == 0.0) return;
+  // compute divide constant
   float _divideBy = 1.0 / (_amplitudeSum > aMin ? _amplitudeSum : aMin);
 
+  // divide amplitudes from global wavelist
   current = globalWaveList;
   while (current != NULL) {
     if (current->waveRef->getChannel() == aChannel && current->waveRef->checkMappingEnabled() && current->waveRef->getDuration() > 0) {
@@ -96,12 +97,6 @@ void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
     }
     current = current->next;
   }
-
-  // Serial.println("2");
-}
-
-void ClassAudioLab::synthesize(void) {
-  generateAudio();
 }
 
 Wave ClassAudioLab::getNewWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType) {
@@ -181,7 +176,7 @@ void ClassAudioLab::changeWaveType(Wave& aWave, WaveType aWaveType) {
   aWave = _newWave;
 }
 
-int *ClassAudioLab::getInputBuffer(uint8_t aChannel) {
+uint16_t *ClassAudioLab::getInputBuffer(uint8_t aChannel) {
   if (!(aChannel >= 0 && aChannel < NUM_IN_CH)) {
     // DBG_printf("INVALID INPUT CHANNEL %d, USE RANGE BETWEEN [0..NUM_IN_CH)\r\n", aChannel);
     return NULL;

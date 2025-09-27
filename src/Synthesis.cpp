@@ -1,19 +1,20 @@
 #include "AudioLab.h"
 
 float ClassAudioLab::windowingCosWave[AUD_OUT_BUFFER_SIZE];
+
 float ClassAudioLab::generateAudioBuffer[NUM_OUT_CH][GEN_AUD_BUFFER_SIZE];
 
 ClassAudioLab::WaveNode* ClassAudioLab::generateAudioWaveList[NUM_OUT_CH]; 
 
-int generateAudioBufferIdx = 0;
-int generateAudioOutBufferIdx = 0;
+uint16_t generateAudioBufferIdx = 0;
+uint16_t generateAudioOutBufferIdx = 0;
 
 void ClassAudioLab::resetGenerateAudio() {
-  //Serial.printf("%d, %d, %d, %d\n", DAC_MAX, DAC_MID, ADC_MAX, ADC_MID);
   // restore scratch pad buffer values
-  for (int c = 0; c < NUM_OUT_CH; c++) {
+  uint16_t c, i;
+  for (c = 0; c < NUM_OUT_CH; c++) {
     freeWaveList(generateAudioWaveList[c]);
-    for (int i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
+    for (i = 0; i < GEN_AUD_BUFFER_SIZE; i++) {
       generateAudioBuffer[c][i] = 0.0;
     }
   }
@@ -34,6 +35,10 @@ void ClassAudioLab::initAudio() {
   ClassWave::calculateSineWave();
 }
 
+/*
+  Compute cosine wave with amplitude 0 to 1.0 with one cycle equivalent to WINDOW_SIZE * 2 samples.
+  This waveform is used for windowing the waveform in generateAudioBuffer over 2 windows
+*/
 void ClassAudioLab::calculateWindowingWave(void) {
   float _resolution = float(2.0 * PI / AUD_OUT_BUFFER_SIZE);
   for (int x = 0; x < AUD_OUT_BUFFER_SIZE; x++) {
@@ -41,6 +46,9 @@ void ClassAudioLab::calculateWindowingWave(void) {
   }
 }
 
+/*
+  Sums up amplitudes of the waveforms in a channel at current moment in time
+*/
 float ClassAudioLab::getSumOfChannel(uint8_t aChannel) {
   float _sum = 0.0;
   // iterate through waves in a channel and get the total sum of the waves
@@ -48,16 +56,18 @@ float ClassAudioLab::getSumOfChannel(uint8_t aChannel) {
   if (_currentNode == NULL) return _sum;
   while (_currentNode != NULL) {
     _sum += _currentNode->waveRef->getWaveValue();
-    //_sum += getWaveVal(_currentNode->waveRef);
     _currentNode = _currentNode->next;
   }
-  return _sum * (DAC_MID - 1);
+  return _sum;
 }
 
-void ClassAudioLab::generateAudio() {
-  // copy wave pointers for waves that need to be synthesized from StaticWaveList to generateAudioWaveList
+/*
+
+*/
+void ClassAudioLab::synthesize() {
   uint16_t c, i, _generateAudioBufferIdxCpy;
 
+  // copy wave pointers for waves which should be synthesized from StaticWaveList to generateAudioWaveList
   WaveNode* _currentNode = globalWaveList;
   while (_currentNode != NULL) {
     Wave _wavePtr = _currentNode->waveRef;
@@ -67,23 +77,17 @@ void ClassAudioLab::generateAudio() {
   }
 
   // calculate values for audio output buffer
-  for (i = 0; i < AUD_OUT_BUFFER_SIZE; i++) {
-    // Serial.println("1");
+  for (i = 0; i < AUD_OUT_WINDOW_SIZE; i++) {
     // sum together the sine waves for all channels
     for (c = 0; c < NUM_OUT_CH; c++) {
       // add windowed value to the existing values in scratch pad audio output buffer at this moment in time
       generateAudioBuffer[c][generateAudioBufferIdx] += getSumOfChannel(c) * windowingCosWave[i];
-    }
 
-    // copy final, synthesized values to volatile audio output buffer
-    if (i < AUD_OUT_WINDOW_SIZE) {
-      // shifting output by 128.0 for ESP32 DAC, min max ensures the value stays between and DAC_MAX
-      for (c = 0; c < NUM_OUT_CH; c++) {
-        AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = max(0, min(DAC_MAX, int(round(generateAudioBuffer[c][generateAudioBufferIdx] + DAC_MID))));
-      }
-      generateAudioOutBufferIdx += 1;
-      if (generateAudioOutBufferIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutBufferIdx = 0;
+      // copy final, synthesized values to volatile audio output buffer
+      AUD_OUT_BUFFER[c][generateAudioOutBufferIdx] = uint16_t(round(generateAudioBuffer[c][generateAudioBufferIdx] * (DAC_MID - 1) + DAC_MID));
     }
+    generateAudioOutBufferIdx += 1;
+    if (generateAudioOutBufferIdx == AUD_OUT_BUFFER_SIZE) generateAudioOutBufferIdx = 0;  
 
     // increment generate audio index
     generateAudioBufferIdx += 1;
@@ -92,6 +96,18 @@ void ClassAudioLab::generateAudio() {
     ClassWave::iterateTimeIndex();
   }
   
+  for (i = 0; i < AUD_OUT_WINDOW_SIZE; i++) {
+    // sum together the sine waves for all channels
+    for (c = 0; c < NUM_OUT_CH; c++) {
+      generateAudioBuffer[c][generateAudioBufferIdx] += getSumOfChannel(c) * windowingCosWave[i + AUD_OUT_WINDOW_SIZE];
+    }
+    // increment generate audio index
+    generateAudioBufferIdx += 1;
+    if (generateAudioBufferIdx == GEN_AUD_BUFFER_SIZE) generateAudioBufferIdx = 0;
+    // increment time index
+    ClassWave::iterateTimeIndex();
+  }
+
   // reset the next window to synthesize new signal
   _generateAudioBufferIdxCpy = generateAudioBufferIdx;
   for (i = 0; i < AUD_OUT_WINDOW_SIZE; i++) {
@@ -102,8 +118,6 @@ void ClassAudioLab::generateAudio() {
     if (_generateAudioBufferIdxCpy == GEN_AUD_BUFFER_SIZE) _generateAudioBufferIdxCpy = 0;
   }
   // determine the next position in the sine wave table, and scratch pad audio output buffer to counter phase cosine wave
-  // generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_IN_BUFFER_SIZE + GEN_AUD_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
-  // generateAudioBufferIdx = int(generateAudioBufferIdx - AUD_OUT_WINDOW_SIZE + AUD_OUT_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
   generateAudioBufferIdx = int(generateAudioBufferIdx + AUD_OUT_BUFFER_SIZE) % int(GEN_AUD_BUFFER_SIZE);
   ClassWave::synchronizeTimeIndex();
 }

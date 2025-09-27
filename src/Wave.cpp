@@ -40,12 +40,9 @@ ClassWave::ClassWave(void) {
   this->mappingWeight = 1.0;
 
   this->_phase = 0;
-  // Serial.println("WAVE ADDED");
 }
 
-ClassWave::~ClassWave(void) {
-  // Serial.println("WAVE REMOVED");
-}
+ClassWave::~ClassWave(void) {}
 
 void ClassWave::set(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, uint16_t aDuration, float aMappingWeight) {
   this->channel = aChannel;

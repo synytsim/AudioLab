@@ -1,14 +1,20 @@
 # AudioLab
 
-This library is used for sampling and synthesis of signals in realtime. Supports stereo input and output at a modifiable sample rate and window size of up to 10kHz
+This library is used for sampling and synthesis of signals in realtime with the ESP32. It supports stereo input and multi-channel output at a modifiable sample rate (up to 32kHz) and window size. Higher sample rates can be achieved by modifying ADC_SAMPLE_RATE in AudioInputOutput.cpp. Audio input and output sample rates can be varied as needed to reduce impact of writing to DAC (which is done via a blocking technique, but writing to DAC is quite fast).
+
+On the other hand, to sample ADC, a non-blocking approach is used allowing performing complex analysis and synthesize/output signals in realtime via Arduino loop(). See examples folder for some applications including tone generator, FFT example, and more. Also, see AudioLabSettings.h file to fine to settings for application, this file contains settings for modifying sample rates, window size and number of input and output channels.
+
+Additionally, usage of a single or dual AD56X4 SPI DAC is supported for 4-8 channel outputS.
 
 ## Installation
 
-Clone this repository into your Arduino libraries folder, or download .zip of the repository, extract it, and place in your Arduino libraries folder
+Clone this repository into Arduino libraries folder
+
+If using the AD56X4 SPI DAC, clone the following repository into Arduino libraries folder:
 
 ## Using in Arduino
 
-To use this library in Arduino add this line to your sketch 
+To use this library in Arduino add this line to your sketch and see examples to get started
 
 `include <AudioLab.h>`
 
@@ -36,7 +42,7 @@ AudioLab is a singleton instance of ClassAudioLab
 
 * **AudioLab.changeWaveType**(Wave& aWave, WaveType aWaveType) - change the wave type of an existing wave
 
-* **int*** **AudioLab.getInputBuffer**(uint8_t aChannel = 0) - returns pointer to input buffer on a channel
+* **uint16_t*** **AudioLab.getInputBuffer**(uint8_t aChannel = 0) - returns pointer to input buffer on a channel
 
 * **AudioLab.printWaves**(void) - prints information about waves that will be synthesized
 
@@ -66,8 +72,8 @@ Wave is a pointer to a derived object of base ClassWave, to create a valid point
 
 * **float aWaveName->getPhase**(void) - get wave's phase
 
-* **int aWaveName->getChannel**(void) - get wave's channel
+* **uint8_t aWaveName->getChannel**(void) - get wave's channel
 
 ## Compatibility
 
-At the time the library is only compatible with Adafruit HUZZAH ESP32 Feather and Adafruit Feather M4 Express (other boards have not been tested), support for more boards will be added in future update.
+At the time the library is compatible with Adafruit HUZZAH ESP32 Feather
