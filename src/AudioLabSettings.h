@@ -3,17 +3,17 @@
  * Description: This file contains settings such as:
  *              - pin declarations, 
  *              - internal DAC settings - With ESP32 Feather footprint A0(34) and A1(39) pins are used for output
- *              - external DAC settings - At this time this library supports the 1 or 2 AD56X4 DAC(s)
+ *              - external DAC settings - At this time this library supports 1 or 2 AD56X4 DAC(s) for up to 8 channel output
  *                                        Copy AD56X4 to Arduino libraries folder
  *              - internal ADC settings - A2 and A3 are used (this can be modified if necassary)
  *              - sample rate           - Try using powers of 2 in order to get most consistent results (8, 16 and 32k are supported)
  *                                        See ADC.h to modify ADC sample rate, use Timing.ino example for fine tuning
  *              - window size           - The window size (and sample rate) determine the frequency at which AudioLab.ready() returns
- *                                        rue (i.e. sample rate of 8192 and window size of 256 = 32 times per second = 8192 / 256)
+ *                                        true (i.e. sample rate of 8192 and window size of 256 = 32 times per second = 8192 / 256)
  *               
  * Author:      Mykyta "Nick" Synytsia
- * Date:        2023/08/25
- * Version:     2.0
+ * Date:        2025/09/27
+ * Version:     0.5.0
  *******************************************************/
 
 

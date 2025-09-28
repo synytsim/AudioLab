@@ -1,6 +1,13 @@
 /*
- * This example showcases usage of AudioLab with AD56X4 SPI DAC. This sketch simply reads a channel and 
- * frequency from Serial monitor in "c f" formant (i.e. "0 100" will set channel 0 to 100 Hz)
+ * This sketch can be used to perform timing experiments to ensure accurate sample rate.
+ * Resulting sampling duration and sample rate are printed to Serial.
+ * 
+ * See ADC_SAMPLE_RATE in AudioInputOutput.cpp and modify as needed for accuracy. 
+ * Typically ADC_SAMPLE_RATE will only need to be modified if using sample rates other
+ * than 8, 16 or 32 kHz.
+ * 
+ * In addition, timing of synthesis can be done to get an idea of how much time is spent
+ * per window on waveform synthesis.
  */
 
 #include <AudioLab.h>
@@ -13,13 +20,6 @@ uint8_t timingAverageCount = 0;
 uint32_t samplingDurationSum = 0;
 uint32_t synthesisDurationSum = 0;
 
-Wave waves[NUM_OUT_CH];
-
-// variables for storing channel, frequency, and amplitude
-int channel = 0; 
-float frequency = 25;
-float amplitude = 0.5;
-
 // for timing experiments
 uint32_t microsTimeSampling = 0;
 uint32_t prevMicrosTimeSampling = 0;
@@ -30,14 +30,7 @@ void setup() {
 
   delay(2000);
 
-  Serial.println("AudioLab AD56X4 QUAD DAC test");
-
   AudioLab.init();
-
-  // Setting waves to some initial frequency and amplitude
-  for (int i = 0; i < NUM_OUT_CH; i++) {
-    waves[i]= AudioLab.staticWave(i, frequency * (i + 1), amplitude);
-  }
 }
 
 void loop() {
@@ -47,32 +40,7 @@ void loop() {
   prevMicrosTimeSampling = microsTimeSampling;
   microsTimeSampling = micros();
   samplingDurationSum += microsTimeSampling - prevMicrosTimeSampling;
-  #endif
-
-  // change frequency on channel by typing "{channel} {frequency} {amplitude" into serial monitor 
-  // (i.e. "0 100 1.0" will set wave on channel 0 to 100 Hz and max amplitude)
-  if (Serial.available()) {
-    
-    channel = Serial.parseInt();
-    frequency = Serial.parseFloat();
-    amplitude = Serial.parseFloat();
-    Serial.read();
-
-    Serial.print("channel: ");
-    Serial.print(channel);
-    Serial.print("\tfrequency: ");
-    Serial.print(frequency);
-    Serial.print("\tamplitude: ");
-    Serial.println(amplitude);
-
-    waves[channel]->setFrequency(frequency);
-    waves[channel]->setAmplitude(amplitude);
-  }
-
-  // incrementing duration for each wave (by window basis)
-  for (int i = 0; i < NUM_OUT_CH; i++) {
-    waves[i]->setDuration(1);
-  } 
+  #endif 
 
   #ifdef SYNTHESIS_TIMING_TEST
   microsTimeSynth = micros();

@@ -1,10 +1,10 @@
 # AudioLab
 
-This library is used for sampling and synthesis of signals in realtime with the ESP32. It supports stereo input and multi-channel output at a modifiable sample rate (up to 32kHz) and window size. Higher sample rates can be achieved by modifying ADC_SAMPLE_RATE in AudioInputOutput.cpp. Audio input and output sample rates can be varied as needed to reduce impact of writing to DAC (which is done via a blocking technique, but writing to DAC is quite fast).
+This library is used for sampling and synthesis of signals in realtime with the ESP32. It supports stereo input and multi-channel output at a modifiable sample rate (up to 32kHz) and window size. Higher sample rates can be achieved by modifying ADC_SAMPLE_RATE in AudioInputOutput.cpp. Audio input and output sample rates can be varied via AUD_IN_OUT_SAMPLE_RATIO to reduce memory usage and impact of writing to DAC (which is done via a blocking technique, however writing to DAC is quite fast).
 
-On the other hand, to sample ADC, a non-blocking approach is used allowing performing complex analysis and synthesize/output signals in realtime via Arduino loop(). See examples folder for some applications including tone generator, FFT example, and more. Also, see AudioLabSettings.h file to fine to settings for application, this file contains settings for modifying sample rates, window size and number of input and output channels.
+On the other hand, to sample ADC, a non-blocking approach is used. Allowing performing complex analysis and synthesize/output signals in realtime via Arduino loop(). See examples folder for some applications including tone generator, FFT example, and more. Also, see AudioLabSettings.h file to fine to settings for application, this file contains settings for modifying sample rates, window size and number of input and output channels.
 
-Additionally, usage of a single or dual AD56X4 SPI DAC is supported for 4-8 channel outputS.
+Additionally, usage of a single or dual AD56X4 SPI DAC is supported for 4-8 channel output.
 
 ## Installation
 
@@ -18,9 +18,10 @@ To use this library in Arduino add this line to your sketch and see examples to 
 
 `include <AudioLab.h>`
 
-The pins AudioLab uses on the Adafruit ESP32 Feather and Adafruit Feather M4 Express:
-* **A0** and **A1** for output
+The pins AudioLab uses on the Adafruit ESP32 Feather:
+* **A0** and **A1** for output (if using on-board DACs)
 * **A2** and **A3** for input
+* For external DAC (AD56X4) pin 33 and/or 32 are used as slave select, modifying these is fairly straightforward, but may need some fiddling.
 
 The sample rate, window size and number of input and output channels can be modified in the **AudioLabSettings.h** file located in the **src** folder.
 
@@ -32,7 +33,7 @@ AudioLab is a singleton instance of ClassAudioLab
 
 * **AudioLab.init**(void) - initialize AudioLab, call once in Arduino IDE `void setup()`
 
-* **bool AudioLab.ready**(void) - returns true when synthesis function should be called. Call this function continuously in Arduino IDE `void loop()` with `if (AudioLab.ready())`
+* **bool AudioLab.ready**(void) - returns true when synthesis function should be called. Call this function continuously in Arduino IDE `void loop()` with `if (AudioLab.ready()) {...}` or `if (!AudioLab.ready()) return;`
 
 * **AudioLab.synthesize**(void) - synthesize signal for audio output, this function should be called once in `if (AudioLab.ready())` block (after waves are assigned)
 

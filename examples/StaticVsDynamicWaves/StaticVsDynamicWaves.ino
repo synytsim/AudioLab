@@ -19,7 +19,10 @@ Wave aStaticWave = AudioLab.staticWave(0, 10, 0.3, 0, SINE);
 // Wave aDynamicWave = AudioLab.dynamicWave(0, 10, 20, 0, SINE);
 
 void setup() {
-  // init AudioLab
+  Serial.begin(115200);
+
+  delay(2000);
+
   AudioLab.init();
 }
 
