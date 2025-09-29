@@ -10,7 +10,7 @@ Additionally, usage of a single or dual AD56X4 SPI DAC is supported for 4-8 chan
 
 Clone this repository into Arduino libraries folder
 
-If using the AD56X4 SPI DAC, clone the following repository into Arduino libraries folder:
+If using the AD56X4 SPI DAC, clone the following repository into Arduino libraries folder: https://github.com/synytsim/AD56X4_ESP32
 
 ## Using in Arduino
 
@@ -21,7 +21,7 @@ To use this library in Arduino add this line to your sketch and see examples to 
 The pins AudioLab uses on the Adafruit ESP32 Feather:
 * **A0** and **A1** for output (if using on-board DACs)
 * **A2** and **A3** for input
-* For external DAC (AD56X4) pin 33 and/or 32 are used as slave select, modifying these is fairly straightforward, but may need some fiddling.
+* For external DAC (AD56X4) pin **33** and/or **32** are used as slave select, modifying these is fairly straightforward, but may need some fiddling.
 
 The sample rate, window size and number of input and output channels can be modified in the **AudioLabSettings.h** file located in the **src** folder.
 

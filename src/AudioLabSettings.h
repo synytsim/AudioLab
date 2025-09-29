@@ -4,7 +4,7 @@
  *              - pin declarations, 
  *              - internal DAC settings - With ESP32 Feather footprint A0(34) and A1(39) pins are used for output
  *              - external DAC settings - At this time this library supports 1 or 2 AD56X4 DAC(s) for up to 8 channel output
- *                                        Copy AD56X4 to Arduino libraries folder
+ *                                        Copy AD56X4 to Arduino libraries folder: https://github.com/synytsim/AD56X4_ESP32
  *              - internal ADC settings - A2 and A3 are used (this can be modified if necassary)
  *              - sample rate           - Try using powers of 2 in order to get most consistent results (8, 16 and 32k are supported)
  *                                        See ADC.h to modify ADC sample rate, use Timing.ino example for fine tuning
@@ -23,8 +23,8 @@
 #define DEBUG
 
 #ifndef SAMPLE_RATE
-#define SAMPLE_RATE 8192
-#endif
+#define SAMPLE_RATE 8192    // Supported sample rates are 8, 16 and 32 kHz. If other sample rates are needed
+#endif                      // see AudioInputOutput.cpp
 
 #ifndef WINDOW_SIZE
 #define WINDOW_SIZE 256
@@ -32,6 +32,7 @@
 
 /******************************** FEATHER ADC PINS ********************************/
 #define NUM_IN_CH 2         // Number of input channels to sample (Limit is 2, but adding more is fairly straightforward)
+                            // See AudioInputOutput.cpp
 
 #define IN_PIN_CH1 A2       
 #define IN_PIN_CH2 A3       
@@ -43,14 +44,24 @@
 #define DAC_RESOLUTION 16   // The AD56X4 comes in 3 versions: 12, 14 and 16 bit
 
 // #define NUM_OUT_CH 4     // Uncomment if using 1xAD56X4 SPI DAC and comment below
-#define NUM_OUT_CH 8        // Uncomment if using 2xAD56X 4 SPI DAC and uncomment below
+#define NUM_OUT_CH 8        // Uncomment if using 2xAD56X4 SPI DAC and comment above
 
+// Designated slave select pins for AD56X4. Using different pins may need to tweak
+// WRITE_PERI_REG(...) in AD56X4.cpp (seperate library)
+// For flexibility it may be best to define SS toggling via function pointer(s)
 #define DAC_PIN_SS_1 33     // Slave select pin for first AD56X4 
 #define DAC_PIN_SS_2 32     // Slave select pin for second AD56X4 
 
 #define AUD_IN_OUT_SAMPLE_RATIO 2       // Uncomment to write to each AD56X4 channel at 
                                         // (SAMPLE_RATE >> AUD_IN_OUT_SAMPLE_RATIO) Hz
                                         // Note: in powers of 2
+
+                                        // Example: SAMPLE_RATE of 8192 and AUD_IN_SAMPLE_RATIO == 2
+                                        // will make AUD_OUT_SAMPLE_RATE == 2048
+
+                                        // Note: For AD56X4 only two modes are supported at this time
+                                        // a ratio of 0 and 2. Changing this is relatively straightfoward
+                                        // in AudioInputOutput.cpp
 
 
 /******************************** FEATHER ESP32 AND SAMD51 DAC RESOLUTION ********************************/
@@ -67,8 +78,8 @@
     #endif
 #else
 #error BOARD NOT SUPPORTED/TESTED   // comment out for testing with other boards
-#define ADC_RESOLUTION 12
-#define DAC_RESOLUTION 12
+#define ADC_RESOLUTION 12           // However, you'll have to use external libraries or set low-level
+#define DAC_RESOLUTION 12           // registers to ensure sampling is done via interrupt or DMA
 #endif
 
 /******************************** AUDIO INPUT OUTPUT SAMPLED RATIO ********************************/
