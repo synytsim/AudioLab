@@ -79,7 +79,7 @@ class ClassAudioLab
     static float windowingCosWave[AUD_OUT_BUFFER_SIZE];
 
     // input and output buffers
-    static uint16_t inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
+    // static uint16_t inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
 
     volatile static uint16_t AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
     volatile static uint16_t AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
@@ -107,7 +107,31 @@ class ClassAudioLab
      * @return true if AudioLab is ready for synthesis, otherwise false
      *
      */
-    bool ready();
+    template <typename T>
+    bool ready(T *buffer) {
+      if (!AUD_IN_BUFFER_FULL()) return false;
+
+      // store samples from volatile input buffer to non-volatile buffer
+      uint16_t c, i;
+      for (c = 0; c < NUM_IN_CH; c++) {
+        for (i = 0; i < WINDOW_SIZE; i++) {
+          buffer[c * WINDOW_SIZE + i] = AUD_IN_BUFFER[c][i];
+        }
+      }
+
+      // reset/synchronize input and output indexes to continue sampling
+      SYNC_AUD_IN_OUT_IDX();
+
+      // free generateAudioWaveList
+      for (c = 0; c < NUM_OUT_CH; c++) {
+        freeWaveList(generateAudioWaveList[c]);
+      } 
+      
+      // remove dynamic waves
+      removeDynamicWaves();
+
+      return true;
+    };
 
     /**
      * Linearly maps amplitudes of all waves on a channel so their sum will be
@@ -166,14 +190,14 @@ class ClassAudioLab
      */
     void changeWaveType(Wave& aWave, WaveType aWaveType);
 
-    /**
-     * Get pointer to input buffer
-     *
-     * @param aChannel input buffer channel between [0..NUM_IN_CH), default is 0
-     *
-     * @return read-only pointer to input buffer or NULL if NUM_IN_CH == 0
-     */
-    uint16_t *getInputBuffer(uint8_t aChannel = 0);
+    // /**
+    //  * Get pointer to input buffer
+    //  *
+    //  * @param aChannel input buffer channel between [0..NUM_IN_CH), default is 0
+    //  *
+    //  * @return read-only pointer to input buffer or NULL if NUM_IN_CH == 0
+    //  */
+    // uint16_t *getInputBuffer(uint8_t aChannel = 0);
 
     /**
      * Prints the waves that will be synthesized to Serial in format (WaveType, Frequency, Amplitude, Phase)
