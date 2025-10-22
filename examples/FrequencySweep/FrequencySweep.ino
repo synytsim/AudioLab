@@ -25,6 +25,7 @@ void loop() {
     // reset the frequency to 10Hz if it is more than or equal to AUD_OUT_SAMPLE_RATE, otherwise multiply the current frequency by 1.01
     if (aStaticWave->getFrequency() >= AUD_OUT_SAMPLE_RATE) aStaticWave->setFrequency(100);
     else aStaticWave->setFrequency(aStaticWave->getFrequency() * 1.001);
+    aStaticWave->setDuration(1);
 
     Serial.println(aStaticWave->getFrequency());
 

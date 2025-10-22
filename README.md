@@ -33,7 +33,9 @@ AudioLab is a singleton instance of ClassAudioLab
 
 * **AudioLab.init**(void) - initialize AudioLab, call once in Arduino IDE `void setup()`
 
-* **bool AudioLab.ready**(void) - returns true when synthesis function should be called. Call this function continuously in Arduino IDE `void loop()` with `if (AudioLab.ready()) {...}` or `if (!AudioLab.ready()) return;`
+* **bool AudioLab.ready<typename>**(typename *buffer) - returns true when input buffer fills. Call this function continuously in Arduino IDE `void loop()` with `if (AudioLab.ready(...)) {...}` or `if (!AudioLab.ready(...)) return;` The buffer parameter is used to copy results from volatile buffer to non-volatile buffer. Buffer must be at least of size [NUM_IN_CH][WINDOW_SIZE].
+
+* **bool AudioLab.ready**(void) - use this definition of `AudioLab.ready()` if aquired signal isn't needed
 
 * **AudioLab.synthesize**(void) - synthesize signal for audio output, this function should be called once in `if (AudioLab.ready())` block (after waves are assigned)
 
@@ -42,8 +44,6 @@ AudioLab is a singleton instance of ClassAudioLab
 * **Wave AudioLab.dynamicWave**(uint8_t aChannel, WaveType aWaveType = SINE) - returns a pointer to wave object that will only exist in scope of `if (AudioLab.ready())` block
 
 * **AudioLab.changeWaveType**(Wave& aWave, WaveType aWaveType) - change the wave type of an existing wave
-
-* **uint16_t*** **AudioLab.getInputBuffer**(uint8_t aChannel = 0) - returns pointer to input buffer on a channel
 
 * **AudioLab.printWaves**(void) - prints information about waves that will be synthesized
 

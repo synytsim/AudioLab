@@ -38,7 +38,7 @@
 #define IN_PIN_CH2 A3       
 
 /******************************** AD56X4 DAC SETTINGS ********************************/
-#define USING_AD56X4_DAC    // Uncomment if using AD5644 SPI DAC
+// #define USING_AD56X4_DAC    // Uncomment if using AD5644 SPI DAC
 
 #if defined(USING_AD56X4_DAC)
 #define DAC_RESOLUTION 16   // The AD56X4 comes in 3 versions: 12, 14 and 16 bit

@@ -102,8 +102,9 @@ class ClassAudioLab
     // void reset();
 
     /**
-     * Returns true when input buffer fills and synthesis should occur
+     * Returns true when input buffer fills with ADC samples and synthesis should occur
      *
+     * @param buffer buffer to copy samples to, must be of size [NUM_IN_CH][WINDOW_SIZE]
      * @return true if AudioLab is ready for synthesis, otherwise false
      *
      */
@@ -111,8 +112,8 @@ class ClassAudioLab
     bool ready(T *buffer) {
       if (!AUD_IN_BUFFER_FULL()) return false;
 
-      // store samples from volatile input buffer to non-volatile buffer
       uint16_t c, i;
+      // store samples from volatile input buffer to non-volatile buffer
       for (c = 0; c < NUM_IN_CH; c++) {
         for (i = 0; i < WINDOW_SIZE; i++) {
           buffer[c * WINDOW_SIZE + i] = AUD_IN_BUFFER[c][i];
@@ -132,6 +133,14 @@ class ClassAudioLab
 
       return true;
     };
+
+    /**
+     * Returns true when input buffer fills and synthesis should occur
+     *
+     * @return true if AudioLab is ready for synthesis, otherwise false
+     * @note this definition should be used if ADC samples are not needed
+     */
+    bool ready(void);
 
     /**
      * Linearly maps amplitudes of all waves on a channel so their sum will be
