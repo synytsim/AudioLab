@@ -98,14 +98,21 @@ class ClassAudioLab
      */
     void init();
 
-    // reset AudioLab (WIP)
-    // void reset();
+    /**
+     * Returns true when synthesis should occur
+     *
+     * @return true if AudioLab is ready for synthesis, otherwise false
+     * @note this definition should be used if ADC samples are not needed
+     */
+    bool ready(void);
+
 
     /**
      * Returns true when input buffer fills with ADC samples and synthesis should occur
      *
      * @param buffer buffer to copy samples to, must be of size [NUM_IN_CH][WINDOW_SIZE]
      * @return true if AudioLab is ready for synthesis, otherwise false
+     * @note use this definition if aquiring samples from ADC
      *
      */
     template <typename T>
@@ -134,13 +141,6 @@ class ClassAudioLab
       return true;
     };
 
-    /**
-     * Returns true when input buffer fills and synthesis should occur
-     *
-     * @return true if AudioLab is ready for synthesis, otherwise false
-     * @note this definition should be used if ADC samples are not needed
-     */
-    bool ready(void);
 
     /**
      * Linearly maps amplitudes of all waves on a channel so their sum will be

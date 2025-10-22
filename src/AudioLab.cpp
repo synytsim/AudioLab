@@ -34,7 +34,7 @@ void ClassAudioLab::init(void) {
 //   return;
 // }
 
-void ClassAudioLab::ready() {
+bool ClassAudioLab::ready(void) {
   if (!AUD_IN_BUFFER_FULL()) return false;
     // reset/synchronize input and output indexes to continue sampling
     SYNC_AUD_IN_OUT_IDX();
