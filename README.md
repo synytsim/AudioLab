@@ -45,6 +45,8 @@ AudioLab is a singleton instance of ClassAudioLab
 
 * **AudioLab.changeWaveType**(Wave& aWave, WaveType aWaveType) - change the wave type of an existing wave
 
+* **AudioLab.mapAmplitudes**(uint8_t aChannel, float aMin, float smoothing) - Per channel, clamped, amplitude normalization based on a minimum value. Use smoothing to smoothen aMin value based on previous aMin value
+
 * **AudioLab.printWaves**(void) - prints information about waves that will be synthesized
 
 * **AudioLab.pauseSampling**(void) - disables alarm of timer used for sampling until `resumeSampling()` is called
