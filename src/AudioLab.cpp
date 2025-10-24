@@ -2,7 +2,7 @@
 
 ClassAudioLab AudioLab;
 
-uint16_t ClassAudioLab::inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
+// uint16_t ClassAudioLab::inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
 
 void ClassAudioLab::init(void) {
   initAudio();
@@ -34,42 +34,31 @@ void ClassAudioLab::init(void) {
 //   return;
 // }
 
-/*
- * returns true once WINDOW_SIZE samples is sampled but first samples from volatile buffer are copied to non-volatile
- * buffer, then input and buffer indexes are synchronized and dynamic waves are removed for next synthesis cycle
- */
 bool ClassAudioLab::ready(void) {
   if (!AUD_IN_BUFFER_FULL()) return false;
+    // reset/synchronize input and output indexes to continue sampling
+    SYNC_AUD_IN_OUT_IDX();
 
-  // store samples from volatile input buffer to non-volatile buffer
-  uint16_t c, i;
-  for (c = 0; c < NUM_IN_CH; c++) {
-    for (i = 0; i < WINDOW_SIZE; i++) {
-      inputBuffer[c][i] = AUD_IN_BUFFER[c][i];
-    }
-  }
+    // free generateAudioWaveList
+    for (uint16_t c = 0; c < NUM_OUT_CH; c++) {
+      freeWaveList(generateAudioWaveList[c]);
+    } 
+    
+    // remove dynamic waves
+    removeDynamicWaves();
 
-  // reset/synchronize input and output indexes to continue sampling
-  SYNC_AUD_IN_OUT_IDX();
-
-  // free generateAudioWaveList
-  for (c = 0; c < NUM_OUT_CH; c++) {
-    freeWaveList(generateAudioWaveList[c]);
-  }
-  
-  // remove dynamic waves
-  removeDynamicWaves();
-
-  return true;
+    return true;
 }
 
 /*
  * Takes the sum of amplitudes in a channel and divides by a minimum value but, if the amplitude sum exceeds the minimum 
  * value they are divided by the sum
  */
-void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
+void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin, float smoothing) {
   if (aChannel < 0 || aChannel >= NUM_OUT_CH) return;
   if (aMin == 0.0) return;      // ensure no division by 0
+
+  static float _runningSum[NUM_OUT_CH] = { 1.0 };
 
   float _amplitudeSum = 0.0;
 
@@ -78,23 +67,29 @@ void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin) {
 
   // sum up amplitudes from global wavelist
   while (current != NULL) {
-    if (current->waveRef->getChannel() == aChannel && current->waveRef->checkMappingEnabled() && current->waveRef->getDuration() > 0) {
+    if (current->waveRef->getChannel() == aChannel && current->waveRef->checkMappingEnabled() && current->waveRef->getDuration() > 0)
       _amplitudeSum += current->waveRef->getAmplitude();
-    }
     current = current->next;
   }
 
   if (_amplitudeSum == 0.0) return;   // ensure no division by 0
 
+  // smooth sum of amplitudes with previous sum (if smoothing factor is > 0)
+  if (_amplitudeSum < _runningSum[aChannel]) {
+    _runningSum[aChannel] = _runningSum[aChannel] * smoothing + _amplitudeSum * (1. - smoothing);
+    // clamp to aMin if needed
+    if (_runningSum[aChannel] < aMin) _runningSum[aChannel] = aMin;
+  // use current sum if current sum is greater than running sum to ensure amplitude sum stays between 0 and 1.0
+  } else _runningSum[aChannel] = _amplitudeSum;
+
   // compute divide constant
-  float _divideBy = 1.0 / (_amplitudeSum > aMin ? _amplitudeSum : aMin);
+  float _divideBy = 1.0 / (_runningSum[aChannel] > 0 ? _runningSum[aChannel] : 1.0);
 
   // divide amplitudes from global wavelist
   current = globalWaveList;
   while (current != NULL) {
-    if (current->waveRef->getChannel() == aChannel && current->waveRef->checkMappingEnabled() && current->waveRef->getDuration() > 0) {
+    if (current->waveRef->getChannel() == aChannel && current->waveRef->checkMappingEnabled() && current->waveRef->getDuration() > 0)
       current->waveRef->setAmplitude(current->waveRef->getAmplitude() * current->waveRef->getMappingWeight() * _divideBy);
-    }
     current = current->next;
   }
 }
@@ -176,13 +171,13 @@ void ClassAudioLab::changeWaveType(Wave& aWave, WaveType aWaveType) {
   aWave = _newWave;
 }
 
-uint16_t *ClassAudioLab::getInputBuffer(uint8_t aChannel) {
-  if (!(aChannel >= 0 && aChannel < NUM_IN_CH)) {
-    // DBG_printf("INVALID INPUT CHANNEL %d, USE RANGE BETWEEN [0..NUM_IN_CH)\r\n", aChannel);
-    return NULL;
-  }
-  return inputBuffer[aChannel];
-}
+// uint16_t *ClassAudioLab::getInputBuffer(uint8_t aChannel) {
+//   if (!(aChannel >= 0 && aChannel < NUM_IN_CH)) {
+//     // DBG_printf("INVALID INPUT CHANNEL %d, USE RANGE BETWEEN [0..NUM_IN_CH)\r\n", aChannel);
+//     return NULL;
+//   }
+//   return inputBuffer[aChannel];
+// }
 
 void ClassAudioLab::printWaves(void) {
   bool _return = 1;

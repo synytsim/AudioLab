@@ -1,19 +1,31 @@
 /*
-  This example demonstrates usage of Fast4ier library with AudioLab.
+  This example demonstrates usage of Fast4ier library and sampling ADC using a non-blocking approach via
+  AudioLab. The approach is almost fully non-blocking since sampling of the ADC is done in the background
+  via DMA which allows for processing in-between samples.
+  Using DMA is different from using ISR timer (like in previous version of AudioLab) since CPU intervention
+  was still required in order to sample ADC. With DMA, the only CPU intervention is copying results from
+  DMA buffers to memory.
 */
 
 #include <AudioLab.h>
 #include <Fast4ier.h>
+#include <signals.h>
 
-uint16_t *AudioLabInputBuffer = AudioLab.getInputBuffer(0);
-complex samples[WINDOW_SIZE];
+complex samples[NUM_IN_CH][WINDOW_SIZE];
 float hammingWindow[WINDOW_SIZE];
+
+Wave waves[NUM_OUT_CH];
 
 void setup() {
   Serial.begin(115200);
 
   // Computing needs to be done only once, hamming window uses a cosine which takes forever to execute.
   ComputeHammingWindow(hammingWindow, WINDOW_SIZE);
+
+  for (int i = 0; i < NUM_OUT_CH; i++) {
+    waves[i] = AudioLab.staticWave(i, SINE);
+    waves[i]->setAmplitude(0.5);
+  }
 
   // initialize AudioLab things (DMA ADC and DAC output)
   AudioLab.init();
@@ -23,30 +35,36 @@ void loop() {
   // waiting for AudioLab input buffer to fill. Even when AudioLab.ready() returns true, the sampling 
   // continues in the background. The processor constantly switches context allowing tasks to be performed
   // seemingly simultaneously.
-  if (!AudioLab.ready()) return;
-  for (int i = 0; i < WINDOW_SIZE; i++) {
-    samples[i] = AudioLabInputBuffer[i];
-  }
+  if (!AudioLab.ready<complex>(*samples)) return;
 
   // see runFFT() function for details...
-  runFFT(samples, WINDOW_SIZE);
+  for (int c = 0; c < NUM_IN_CH; c++) {
+    runFFT(samples[c], WINDOW_SIZE);
+  }
 
   // do something with magnitude data, in this case find peak frequency
   int maxIdx = 0;
   float max = 0;
 
-  for (int i = 1; i < int(WINDOW_SIZE) >> 1; i++) {
-    if (samples[i].re() < max) continue;
-    max = samples[i].re();
-    maxIdx = i;
+  for (int c = 0; c < NUM_IN_CH; c++) {
+    int maxIdx = 0;
+    float max = 0;
+    for (int i = 1; i < int(WINDOW_SIZE) >> 1; i++) {
+      if (samples[c][i].re() < max) continue;
+      max = samples[c][i].re();
+      maxIdx = i;
+    }
+    // print peak frequency to console
+    Serial.print(c);
+    Serial.print(" - ");
+    Serial.print(maxIdx * SAMPLE_RATE / WINDOW_SIZE);
+    Serial.print("Hz\t");
+
+    // set corresponding wave to peak frequency
+    waves[c]->setFrequency(maxIdx * SAMPLE_RATE / WINDOW_SIZE);    
+    waves[c]->setDuration(1);
   }
-
-  // convert bin to frequency...
-  maxIdx = maxIdx * SAMPLE_RATE / WINDOW_SIZE;
-  Serial.println(maxIdx);
-
-  // optionally, create a wave on channel 0 with frequency equal to peak frequency
-  // AudioLab.dynamicWave(0, maxIdx, 0.5);
+  Serial.println();
 
   // ensure to call synthesize to generate a window of samples for output (Not required if output is irrelevant)
   AudioLab.synthesize();
@@ -57,37 +75,4 @@ void runFFT(complex *samples, uint16_t windowSize) {
   Windowing(samples, hammingWindow, windowSize);  // multiplies samples by some windowing function
   Fast4::FFT(samples, windowSize);                // this is what does the actual FFT
   ComplexToMagnitude(samples, windowSize);        // converting complex values to magnitudes
-}
-
-void DCRemoval(complex *input, uint16_t windowSize) {
-    int i;
-    complex average = 0;
-    for (i = 0; i < windowSize; i++) {
-        average += input[i];
-    }
-
-    average /= windowSize;
-
-    for (i = 0; i < windowSize; i++) {
-        input[i] -= average;
-    }
-}
-
-void Windowing(complex *input, float *window, uint16_t windowSize) {
-    for (int i = 0; i < windowSize; i++) {
-        input[i] *= window[i];
-    }
-}
-
-void ComputeHammingWindow(float *window, uint16_t windowSize) {
-    float step = 2 * PI / (windowSize - 1);
-    for (int i = 0; i < windowSize; i++) {
-        window[i] = 0.54 - 0.46 * cos(step * i);
-    }
-}
-
-void ComplexToMagnitude(complex *input, uint16_t windowSize) {
-    for (int i = 0; i < windowSize; i++) {
-        input[i] = sqrt(sq(input[i].re()) + sq(input[i].im()));
-    }
 }

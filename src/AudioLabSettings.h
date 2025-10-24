@@ -27,18 +27,18 @@
 #endif                      // see AudioInputOutput.cpp
 
 #ifndef WINDOW_SIZE
-#define WINDOW_SIZE 256
+#define WINDOW_SIZE 128
 #endif
 
 /******************************** FEATHER ADC PINS ********************************/
-#define NUM_IN_CH 2         // Number of input channels to sample (Limit is 2, but adding more is fairly straightforward)
+#define NUM_IN_CH 1         // Number of input channels to sample (Limit is 2, but adding more is fairly straightforward)
                             // See AudioInputOutput.cpp
 
 #define IN_PIN_CH1 A2       
 #define IN_PIN_CH2 A3       
 
 /******************************** AD56X4 DAC SETTINGS ********************************/
-#define USING_AD56X4_DAC    // Uncomment if using AD5644 SPI DAC
+// #define USING_AD56X4_DAC    // Uncomment if using AD5644 SPI DAC
 
 #if defined(USING_AD56X4_DAC)
 #define DAC_RESOLUTION 16   // The AD56X4 comes in 3 versions: 12, 14 and 16 bit
