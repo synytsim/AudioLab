@@ -27,11 +27,11 @@
 #endif                      // see AudioInputOutput.cpp
 
 #ifndef WINDOW_SIZE
-#define WINDOW_SIZE 256
+#define WINDOW_SIZE 128
 #endif
 
 /******************************** FEATHER ADC PINS ********************************/
-#define NUM_IN_CH 2         // Number of input channels to sample (Limit is 2, but adding more is fairly straightforward)
+#define NUM_IN_CH 1         // Number of input channels to sample (Limit is 2, but adding more is fairly straightforward)
                             // See AudioInputOutput.cpp
 
 #define IN_PIN_CH1 A2       

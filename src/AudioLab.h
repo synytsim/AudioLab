@@ -116,14 +116,14 @@ class ClassAudioLab
      *
      */
     template <typename T>
-    bool ready(T *buffer) {
+    bool ready(T *buffer, uint16_t bufferSize = WINDOW_SIZE) {
       if (!AUD_IN_BUFFER_FULL()) return false;
 
       uint16_t c, i;
       // store samples from volatile input buffer to non-volatile buffer
       for (c = 0; c < NUM_IN_CH; c++) {
         for (i = 0; i < WINDOW_SIZE; i++) {
-          buffer[c * WINDOW_SIZE + i] = AUD_IN_BUFFER[c][i];
+          buffer[c * bufferSize + i] = AUD_IN_BUFFER[c][i];
         }
       }
 
@@ -147,8 +147,9 @@ class ClassAudioLab
      * less than or equal to 1.0.
      * @param aChannel channel of the waves to be mapped
      * @param aMin the minumum value to use for mapping, if amplitude sum surpasses this value then the amplitude sum will be used.
+     * @param smoothing amplitude smoothing (blending current sum with previous sum), must be in the [0, 1.0] range
      */
-    void mapAmplitudes(uint8_t aChannel, float aMin);
+    void mapAmplitudes(uint8_t aChannel, float aMin, float smoothing = 0.0);
 
     /**
      * Fills output buffer with synthesized signal composed of assigned waves
