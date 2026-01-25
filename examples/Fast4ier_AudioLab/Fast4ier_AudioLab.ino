@@ -14,7 +14,7 @@
 complex samples[NUM_IN_CH][WINDOW_SIZE];
 float hammingWindow[WINDOW_SIZE];
 
-Wave waves[NUM_OUT_CH];
+// Wave waves[NUM_OUT_CH];
 
 void setup() {
   Serial.begin(115200);
@@ -22,10 +22,10 @@ void setup() {
   // Computing needs to be done only once, hamming window uses a cosine which takes forever to execute.
   ComputeHammingWindow(hammingWindow, WINDOW_SIZE);
 
-  for (int i = 0; i < NUM_OUT_CH; i++) {
-    waves[i] = AudioLab.staticWave(i, SINE);
-    waves[i]->setAmplitude(0.5);
-  }
+  // for (int i = 0; i < NUM_OUT_CH; i++) {
+    // waves[i] = AudioLab.staticWave(i, SINE);
+    // waves[i]->setAmplitude(0.5);
+  // }
 
   // initialize AudioLab things (DMA ADC and DAC output)
   AudioLab.init();
@@ -61,8 +61,8 @@ void loop() {
     Serial.print("Hz\t");
 
     // set corresponding wave to peak frequency
-    waves[c]->setFrequency(maxIdx * SAMPLE_RATE / WINDOW_SIZE);    
-    waves[c]->setDuration(1);
+    // waves[c]->setFrequency(maxIdx * SAMPLE_RATE / WINDOW_SIZE);    
+    // waves[c]->setDuration(1);
   }
   Serial.println();
 

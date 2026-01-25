@@ -21,44 +21,35 @@ const unsigned long MaxGlobalTimeIndexWindow = MaxGlobalTimeIndex - AUD_OUT_WIND
 // used for debugging / printing waves
 const char* getWaveName(WaveType aWaveType) {
   static const char* const waveNames[] = {
-    "SINE", "COSINE", "SQUARE", "SAWTOOTH", "TRIANGLE"
+    "ZERO", "SINE", "COSINE", "SQUARE", "SAWTOOTH", "TRIANGLE"
   };
   return waveNames[aWaveType];
 }
 
 /*
-  PARENT CLASS: Sine, Cosine, Square, Triangle, Sawtooth
+  PARENT CLASS: ClassWave
 */
 
 ClassWave::ClassWave(void) {
   this->frequency = 0;
   this->amplitude = 0;
   this->phase = 0;
-  this->channel = 0;
-  this->duration = 1;
-  this->mapping = 1;
-  this->mappingWeight = 1.0;
 
   this->_phase = 0;
 }
 
 ClassWave::~ClassWave(void) {}
 
-void ClassWave::set(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, uint16_t aDuration, float aMappingWeight) {
-  this->channel = aChannel;
+void ClassWave::set(float aFrequency, float anAmplitude, float aPhase) {
   this->frequency = aFrequency;
   this->amplitude = anAmplitude;
   this->phase = aPhase;
-  this->duration = aDuration;
-  this->mappingWeight = aMappingWeight;
 }
 
 void ClassWave::reset() {
   this->frequency = 0;
   this->amplitude = 0;
   this->phase = 0;
-  this->duration = 1;
-  this->mappingWeight = 1.0;
 }
 
 void ClassWave::setFrequency(float aFrequency) { 
@@ -82,37 +73,9 @@ void ClassWave::setPhase(float aPhase) {
   this->_phase = int(round(this->phase * AUD_OUT_SAMPLE_RATE));
 }
 
-void ClassWave::setChannel(uint8_t aChannel)  {
-  if (!(aChannel >= 0 && aChannel < NUM_OUT_CH)) {
-    Serial.printf("CANNOT SET CHANNEL %d! USE RANGE BETWEEN [0..NUM_OUT_CH)\r\n", aChannel);
-    return;
-  }
-  this->channel = aChannel;
-}
-
-void ClassWave::setDuration(uint16_t aDuration) {
-  if (aDuration < 0) {
-    Serial.println("DURATION MUST BE POSITIVE");
-    return;
-  }
-  this->duration = aDuration;
-}
-
 float ClassWave::getFrequency(void) const { return this->frequency; }
 float ClassWave::getAmplitude(void) const { return this->amplitude; }
 float ClassWave::getPhase(void) const { return this->phase; }
-uint8_t ClassWave::getChannel(void) const { return this->channel; }
-uint16_t ClassWave::getDuration(void) const { return this->duration; }
-
-void ClassWave::enableMapping(void) { this->mapping = 1; }
-
-void ClassWave::disableMapping(void) { this->mapping = 0; }
-
-bool ClassWave::checkMappingEnabled(void) const { return this->mapping; }
-
-void ClassWave::setMappingWeight(float weight) { this->mappingWeight = weight; }
-
-float ClassWave::getMappingWeight(void) const { return this->mappingWeight; }
 
 WaveType ClassWave::getWaveType(void) const { return this->waveType; }
 
@@ -136,8 +99,12 @@ void ClassWave::synchronizeTimeIndex(void) {
 }
 
 /*
-  CHILD CLASSES: Sine, Cosine, Square, Triangle, Sawtooth
+  CHILD CLASSES: Zero, Sine, Cosine, Square, Triangle, Sawtooth
 */
+
+Zero::Zero() { this->waveType = ZERO; }
+
+float Zero::getWaveValue() const { return 0.0; }
 
 Sine::Sine() { this->waveType = SINE; }
 
@@ -180,3 +147,35 @@ float Sawtooth::getWaveValue() const {
   float _timeIdx = _timeValue - floor(_timeValue);
   return amplitude * 2 * _timeIdx - amplitude;
 }
+
+Add& ClassWave::operator+(const ClassWave& right) {
+    Operand* operandLeft = new Operand(this);
+    Operand* operandRight = new Operand((ClassWave *)&right);
+    return *(new Add(operandLeft, operandRight));
+};
+
+Mul& ClassWave::operator*(const ClassWave& right) {
+    Operand* operandLeft = new Operand(this);
+    Operand* operandRight = new Operand((ClassWave *)&right);
+    return *(new Mul(operandLeft, operandRight));
+};
+
+Add& ClassWave::operator+(const Node& right) {
+    Operand* operand = new Operand(this);
+    return *(new Add(operand, (Node *)&right));
+};
+
+Mul& ClassWave::operator*(const Node& right) {
+    Operand* operand = new Operand(this);
+    return *(new Mul(operand, (Node *)&right));
+};
+
+Add& ClassWave::operator+(const Composite& right) {
+    Operand* operand = new Operand(this);
+    return *(new Add(operand, &right.op1->copy()));
+};
+
+Mul& ClassWave::operator*(const Composite& right) {
+    Operand* operand = new Operand(this);
+    return *(new Mul(operand, &right.op1->copy()));
+};

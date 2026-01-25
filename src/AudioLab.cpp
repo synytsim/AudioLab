@@ -1,8 +1,48 @@
 #include "AudioLab.h"
+#include <typeinfo>
 
 ClassAudioLab AudioLab;
 
-// uint16_t ClassAudioLab::inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
+Zero zero = Zero();
+
+Channel::Channel() {
+  this->op = Operand();
+  this->op.set(zero);
+  this->node = &this->op;
+}
+
+Channel& Channel::operator=(const ClassWave& right) {
+  if (typeid(*this->node) == typeid(Add) || typeid(*this->node) == typeid(Mul))
+    delete this->node;
+  this->op.set(right);
+  this->node = &this->op;
+  return *this;
+}
+
+Channel& Channel::operator=(const Node& right) {
+  if (typeid(*this->node) == typeid(Add) || typeid(*this->node) == typeid(Mul))
+    delete this->node;
+  this->node = (Node *)&right;
+  return *this;
+}
+
+Channel& Channel::operator=(const Composite& right) {
+  if (typeid(*this->node) == typeid(Add) || typeid(*this->node) == typeid(Mul))
+    delete this->node;
+  this->node = (Node *)&right;
+  return *this;
+}
+
+void Channel::clear() {
+  if (typeid(*this->node) == typeid(Add) || typeid(*this->node) == typeid(Mul))
+    delete this->node;
+  this->op.set(zero);
+  this->node = &this->op;
+}
+
+float Channel::getValue() {
+  return this->node->getValue();
+}
 
 void ClassAudioLab::init(void) {
   initAudio();
@@ -30,188 +70,9 @@ void ClassAudioLab::init(void) {
   resumeSampling();
 }
 
-// void ClassAudioLab::reset(void) {
-//   return;
-// }
-
 bool ClassAudioLab::ready(void) {
   if (!AUD_IN_BUFFER_FULL()) return false;
     // reset/synchronize input and output indexes to continue sampling
     SYNC_AUD_IN_OUT_IDX();
-
-    // free generateAudioWaveList
-    for (uint16_t c = 0; c < NUM_OUT_CH; c++) {
-      freeWaveList(generateAudioWaveList[c]);
-    } 
-    
-    // remove dynamic waves
-    removeDynamicWaves();
-
     return true;
-}
-
-/*
- * Takes the sum of amplitudes in a channel and divides by a minimum value but, if the amplitude sum exceeds the minimum 
- * value they are divided by the sum
- */
-void ClassAudioLab::mapAmplitudes(uint8_t aChannel, float aMin, float smoothing) {
-  if (aChannel < 0 || aChannel >= NUM_OUT_CH) return;
-  if (aMin == 0.0) return;      // ensure no division by 0
-
-  static float _runningSum[NUM_OUT_CH] = { 1.0 };
-
-  float _amplitudeSum = 0.0;
-
-  WaveNode* current = globalWaveList;
-  if (current == NULL) return;    // return if global wavelist is empty
-
-  // sum up amplitudes from global wavelist
-  while (current != NULL) {
-    if (current->waveRef->getChannel() == aChannel && current->waveRef->checkMappingEnabled() && current->waveRef->getDuration() > 0)
-      _amplitudeSum += current->waveRef->getAmplitude();
-    current = current->next;
-  }
-
-  if (_amplitudeSum == 0.0) return;   // ensure no division by 0
-
-  // smooth sum of amplitudes with previous sum (if smoothing factor is > 0)
-  if (_amplitudeSum < _runningSum[aChannel]) {
-    _runningSum[aChannel] = _runningSum[aChannel] * smoothing + _amplitudeSum * (1. - smoothing);
-    // clamp to aMin if needed
-    if (_runningSum[aChannel] < aMin) _runningSum[aChannel] = aMin;
-  // use current sum if current sum is greater than running sum to ensure amplitude sum stays between 0 and 1.0
-  } else _runningSum[aChannel] = _amplitudeSum;
-
-  // compute divide constant
-  float _divideBy = 1.0 / (_runningSum[aChannel] > 0 ? _runningSum[aChannel] : 1.0);
-
-  // divide amplitudes from global wavelist
-  current = globalWaveList;
-  while (current != NULL) {
-    if (current->waveRef->getChannel() == aChannel && current->waveRef->checkMappingEnabled() && current->waveRef->getDuration() > 0)
-      current->waveRef->setAmplitude(current->waveRef->getAmplitude() * current->waveRef->getMappingWeight() * _divideBy);
-    current = current->next;
-  }
-}
-
-Wave ClassAudioLab::getNewWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType) {
-  Wave _newWave = NULL;
-  if (aWaveType == SINE) _newWave = new Sine;
-  else if (aWaveType == COSINE) _newWave = new Cosine;
-  else if (aWaveType == SQUARE) _newWave = new Square;
-  else if (aWaveType == SAWTOOTH) _newWave = new Sawtooth;
-  else if (aWaveType == TRIANGLE) _newWave = new Triangle;
-
-  bool _error = 0;
-  if (!((aChannel >= 0 && aChannel < NUM_OUT_CH) && aFrequency >= 0 && aPhase >= 0)) {
-    _error = 1;
-  }
-
-  _newWave->setChannel(aChannel);
-  _newWave->setFrequency(aFrequency);
-  _newWave->setAmplitude(anAmplitude);
-  _newWave->setDuration(1);
-  _newWave->setPhase(aPhase);
-
-  if (_error) {
-    delete _newWave;
-    _newWave = NULL;
-  }
-
-  return _newWave;
-}
-
-Wave ClassAudioLab::staticWave(WaveType aWaveType) { return staticWave(0, 0, 0, 0, aWaveType); }
-
-Wave ClassAudioLab::staticWave(uint8_t aChannel, WaveType aWaveType) { return staticWave(aChannel, 0, 0, 0, aWaveType); }
-
-Wave ClassAudioLab::staticWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType) {
-  Wave _newWave = getNewWave(aChannel, aFrequency, anAmplitude, aPhase, aWaveType);
-  if (_newWave != NULL) pushWaveNode(_newWave, globalWaveList, 0);
-  else Serial.println("CREATE STATIC WAVE FAILED DUE TO INVALID PARAMETERS!");
-  return _newWave;
-}
-
-Wave ClassAudioLab::dynamicWave(WaveType aWaveType) { return dynamicWave(0, 0, 0, 0, aWaveType); }
-
-Wave ClassAudioLab::dynamicWave(uint8_t aChannel, WaveType aWaveType) { return dynamicWave(aChannel, 0, 0, 0, aWaveType); }
-
-Wave ClassAudioLab::dynamicWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType) {
-  Wave _newWave = getNewWave(aChannel, aFrequency, anAmplitude, aPhase, aWaveType);
-  if (_newWave != NULL) pushWaveNode(_newWave, globalWaveList, 1);
-  else Serial.println("CREATE DYNAMIC WAVE FAILED DUE TO INVALID PARAMETERS!");
-  return _newWave;
-}
-
-void ClassAudioLab::changeWaveType(Wave& aWave, WaveType aWaveType) {
-  WaveNode* _currentNode = globalWaveList;
-
-  // looks through globalWaveList to find reference
-  bool _waveExists = 0;
-  while (_currentNode != NULL) {
-    if (_currentNode->waveRef == aWave) {
-      _waveExists = 1;
-      break;
-    }
-    _currentNode = _currentNode->next;
-  }
-
-  // if wave was not found, print message and return
-  if (_waveExists == 0) {
-    Serial.printf("CANNOT CHANGE WAVE TYPE! WAVE AT ADDRESS 0x%02x DOES NOT EXIST IN GLOBAL WAVE LIST\r\n", aWave);
-    return;
-  }
-  // if aWave type is the same as aWaveType return
-  if (aWave->getWaveType() == aWaveType) return;
-
-  // replace this wave with a new wave of a different type but same parameters (channel, frequency, amplitude, phase)
-  Wave _newWave = getNewWave(aWave->getChannel(), aWave->getFrequency(), aWave->getAmplitude(), aWave->getPhase(), aWaveType);
-  delete _currentNode->waveRef;
-  _currentNode->waveRef = _newWave;
-  aWave = _newWave;
-}
-
-// uint16_t *ClassAudioLab::getInputBuffer(uint8_t aChannel) {
-//   if (!(aChannel >= 0 && aChannel < NUM_IN_CH)) {
-//     // DBG_printf("INVALID INPUT CHANNEL %d, USE RANGE BETWEEN [0..NUM_IN_CH)\r\n", aChannel);
-//     return NULL;
-//   }
-//   return inputBuffer[aChannel];
-// }
-
-void ClassAudioLab::printWaves(void) {
-  bool _return = 1;
-  WaveNode* _currentNode = globalWaveList;
-  while (_currentNode != NULL) {
-    Wave _wavePtr = _currentNode->waveRef;
-    _currentNode = _currentNode->next;
-    if (_wavePtr->getAmplitude() > 0.0  && _wavePtr->getFrequency() > 0.0 && _wavePtr->getDuration() > 0) _return = 0;
-  }
-
-  if (_return) return;
-
-  Serial.println("Printing waves (WaveType, Frequency, Amplitude, Phase)");
-  for (int c = 0; c < NUM_OUT_CH; c++) {
-    _currentNode = globalWaveList;
-    Serial.printf("Channel %d: ", c);
-    while (_currentNode != NULL) {
-      Wave _wavePtr = _currentNode->waveRef;
-      _currentNode = _currentNode->next;
-
-      if (_wavePtr->getChannel() != c) continue;
-      if (_wavePtr->getAmplitude() == 0.0 || _wavePtr->getFrequency() == 0.0 || _wavePtr->getDuration() == 0) continue;
-
-      // Serial.printf("(%s, %.2f, %.2f, %.2f)  ", getWaveName(_wavePtr->getWaveType()), double(_wavePtr->getFrequency()), double(_wavePtr->getAmplitude()), double(_wavePtr->getPhase()));
-      Serial.print("(");
-      Serial.print(getWaveName(_wavePtr->getWaveType()));
-      Serial.print(", ");
-      Serial.print(_wavePtr->getFrequency(), 2);
-      Serial.print(", ");
-      Serial.print(_wavePtr->getAmplitude(), 2);
-      Serial.print(", ");
-      Serial.print(_wavePtr->getPhase(), 2);
-      Serial.print(")  ");
-    }
-    Serial.println();
-  }
 }

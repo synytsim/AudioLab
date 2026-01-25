@@ -4,9 +4,17 @@
 #include <Arduino.h>
 #include <math.h>
 #include "AudioLabSettings.h"
+#include "Node.h"
+
+// class Node;
+// class Add;
+// class Mul;
+// class Operand;
+// class Composite;
 
 enum WaveType
 {
+  ZERO,
   SINE,
   COSINE,
   SQUARE,
@@ -24,18 +32,13 @@ class ClassWave
     float frequency;
     float amplitude;
     float phase;
-    uint16_t duration;
-    bool mapping;
-
-    float  mappingWeight;
     
     int _phase;
 
-    uint8_t channel;
+    // uint8_t channel;
     WaveType waveType;
 
   private:
-    // static inline float getTimeValue(int aTimeIdx, int anOffset = 0);
   
   public:
 
@@ -43,27 +46,16 @@ class ClassWave
 
     ~ClassWave();  
 
-    void set(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, uint16_t aDuration, float aMappingWeight);
+    void set(float aFrequency, float anAmplitude, float aPhase);
     void reset();
 
     void setFrequency(float aFrequency);
     void setAmplitude(float anAmplitude);
     void setPhase(float aPhase);
-    void setChannel(uint8_t aChannel);
-    void setDuration(uint16_t aDuration);
 
     float getFrequency() const;
     float getAmplitude() const;
     float getPhase() const;
-    uint8_t getChannel() const;
-    uint16_t getDuration() const;
-
-    void enableMapping();
-    void disableMapping();
-    bool checkMappingEnabled() const;
-
-    void setMappingWeight(float weight);
-    float getMappingWeight() const;
 
     WaveType getWaveType() const;
 
@@ -77,6 +69,21 @@ class ClassWave
 
     static void synchronizeTimeIndex();
 
+    Add& operator+(const ClassWave& right);
+    Mul& operator*(const ClassWave& right);
+
+    Add& operator+(const Node& right);
+    Mul& operator*(const Node& right);
+
+    Add& operator+(const Composite& right);
+    Mul& operator*(const Composite& right);
+
+};
+
+class Zero: public ClassWave {
+  public:
+    Zero();
+    float getWaveValue() const;
 };
 
 class Sine: public ClassWave

@@ -2,10 +2,28 @@
 #define AUDIOLAB_H
 
 #include "AudioLabSettings.h"
-#include "Wave.h"
-#include "math.h"
+// #include "Wave.h"
+// #include "Node.h"
 
-typedef ClassWave* Wave;
+class ClassWave;
+class Node;
+class Operand;
+class Composite;
+
+class Channel {
+  private:
+    Node *node;
+    Operand op();
+  public:
+    Channel();
+    Channel& operator=(const ClassWave& right);
+    Channel& operator=(const Node& right);
+    Channel& operator=(const Composite& right);
+
+    void clear();
+
+    float getValue();
+};
 
 class ClassAudioLab
 {
@@ -16,52 +34,14 @@ class ClassAudioLab
     // configure input and output pins
     void configurePins();
 
-    // initializes wave list head pointer
-    void initWaveList();
-
     // calculates values for windowing wave
     void calculateWindowingWave();
-
-    // returns the sum of a channel
-    float getSumOfChannel(uint8_t aChannel);
 
     // reset generate audio, this is only called during certain events such as init() and reset()
     void resetGenerateAudio();
 
     // reset audio input, output buffers and indexes
     void resetAudInOut();
-
-    // returns pointer to a wave of wave type
-    Wave getNewWave(uint8_t aChannel, float aFrequency, float anAmplitude, float aPhase, WaveType aWaveType);
-
-    // removes all dynamic waves from wave list
-    void removeDynamicWaves();
-
-    // wave node
-    struct WaveNode {
-      WaveNode() : waveRef(NULL), next(NULL), isDynamic(0) {}
-      WaveNode(Wave aReference, WaveNode* nextNode, int dynamic) : waveRef(aReference), next(nextNode), isDynamic(dynamic) {}
-
-      Wave waveRef;
-      WaveNode* next;
-      bool isDynamic;
-    };
-
-    // push a wave node onto the waveList
-    static void pushWaveNode(Wave aWave, WaveNode*& aWaveList, bool isDynamic = 0);
-
-    // remove a node from wave list, returns whether or not wave is dynamic
-    static void removeWaveNode(Wave aWave, WaveNode*& aWaveList);    
-
-    // recursively deletes all nodes from wavelist (wave reference associated with a node remains untouched!)
-    void freeWaveList(WaveNode*& aWaveList);
-    void freeWaveListHelper(WaveNode* waveNode);
-
-    // linked list storing references to all waves
-    static WaveNode* globalWaveList;
-
-    // linked list storing references to waves the need to be synthesizes (ie amplitude != 0 or frequency and phase != 0)
-    static WaveNode* generateAudioWaveList[NUM_OUT_CH]; 
 
     static const uint16_t DAC_MAX = (1 << DAC_RESOLUTION) - 1;
     static const uint16_t DAC_MID = 1 << (DAC_RESOLUTION - 1);
@@ -79,8 +59,6 @@ class ClassAudioLab
     static float windowingCosWave[AUD_OUT_BUFFER_SIZE];
 
     // input and output buffers
-    // static uint16_t inputBuffer[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
-
     volatile static uint16_t AUD_IN_BUFFER[NUM_IN_CH][AUD_IN_BUFFER_SIZE];
     volatile static uint16_t AUD_OUT_BUFFER[NUM_OUT_CH][AUD_OUT_BUFFER_SIZE];
   
@@ -93,6 +71,9 @@ class ClassAudioLab
     void SYNC_AUD_IN_OUT_IDX(void);
 
   public:
+    
+    Channel channel[NUM_OUT_CH] = { Channel() };
+
     /**
      * Initalize AudioLab, configure pins and timer
      */
@@ -130,17 +111,8 @@ class ClassAudioLab
       // reset/synchronize input and output indexes to continue sampling
       SYNC_AUD_IN_OUT_IDX();
 
-      // free generateAudioWaveList
-      for (c = 0; c < NUM_OUT_CH; c++) {
-        freeWaveList(generateAudioWaveList[c]);
-      } 
-      
-      // remove dynamic waves
-      removeDynamicWaves();
-
       return true;
     };
-
 
     /**
      * Linearly maps amplitudes of all waves on a channel so their sum will be
@@ -149,7 +121,7 @@ class ClassAudioLab
      * @param aMin the minumum value to use for mapping, if amplitude sum surpasses this value then the amplitude sum will be used.
      * @param smoothing amplitude smoothing (blending current sum with previous sum), must be in the [0, 1.0] range
      */
-    void mapAmplitudes(uint8_t aChannel, float aMin, float smoothing = 0.0);
+    // void mapAmplitudes(uint8_t aChannel, float aMin, float smoothing = 0.0);
 
     /**
      * Fills output buffer with synthesized signal composed of assigned waves
@@ -157,65 +129,6 @@ class ClassAudioLab
      * @note This function MUST be called in the "if (AudioLab.ready())" block
      */
     void synthesize();
-
-    /**
-     * Create a 'static' wave object and returns a pointer to the object
-     *
-     * @param aChannel channel of the wave, must be between [0..NUM_OUT_CH), default 0
-     * @param aFrequency frequency of the wave, must be positive, default 0
-     * @param anAmplitude amplitude of the wave, default 0
-     * @param aPhase phase of the wave, must be positive, default 0
-     * @param aWaveType the type of wave, default SINE
-     *
-     * @return a pointer to Wave object or NULL if error
-     *
-     * @note static waves exist throughout runtime of program
-     */
-    Wave staticWave(WaveType aWaveType = SINE);
-    Wave staticWave(uint8_t aChannel, WaveType aWaveType = SINE);
-    Wave staticWave(uint8_t aChannel, float aFrequency = 0, float anAmplitude = 0, float aPhase = 0,  WaveType aWaveType = SINE);
-
-    /**
-     * Create a 'dynamic' wave object and returns a pointer to the object
-     *
-     * @param aChannel channel of the wave, must be between [0..NUM_OUT_CH), default 0
-     * @param aFrequency frequency of the wave, must be positive, default 0
-     * @param anAmplitude amplitude of the wave, default 0
-     * @param aPhase phase of the wave, must be positive, default 0
-     * @param aWaveType the type of wave, default SINE
-     *
-     * @return a pointer to Wave object or NULL if error
-     *
-     * @note dynamic waves only exist within the scope of "if (AudioLab.ready())" block
-     */
-    Wave dynamicWave(WaveType aWaveType = SINE);
-    Wave dynamicWave(uint8_t aChannel, WaveType aWaveType = SINE);
-    Wave dynamicWave(uint8_t aChannel, float aFrequency = 0, float anAmplitude = 0, float aPhase = 0,  WaveType aWaveType = SINE);
-    
-    /**
-     * Change the wave type of an existing wave
-     *
-     * @param aWave reference to an existing Wave
-     * @param aWaveType the type of wave to change to
-     */
-    void changeWaveType(Wave& aWave, WaveType aWaveType);
-
-    // /**
-    //  * Get pointer to input buffer
-    //  *
-    //  * @param aChannel input buffer channel between [0..NUM_IN_CH), default is 0
-    //  *
-    //  * @return read-only pointer to input buffer or NULL if NUM_IN_CH == 0
-    //  */
-    // uint16_t *getInputBuffer(uint8_t aChannel = 0);
-
-    /**
-     * Prints the waves that will be synthesized to Serial in format (WaveType, Frequency, Amplitude, Phase)
-     *
-     */
-    void printWaves();
-
-    void printAudioOutputBuffer(uint8_t aChannel);
 
     /**
      * pauses input and output sampling by disabled timer interrupt

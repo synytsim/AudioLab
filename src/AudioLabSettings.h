@@ -12,8 +12,8 @@
  *                                        true (i.e. sample rate of 8192 and window size of 256 = 32 times per second = 8192 / 256)
  *               
  * Author:      Mykyta "Nick" Synytsia
- * Date:        2025/09/27
- * Version:     0.5.0
+ * Date:        2026/01/23
+ * Version:     1.0.0
  *******************************************************/
 
 
