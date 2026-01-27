@@ -34,7 +34,7 @@ uint8_t adc_pins[] = {IN_PIN_CH1, IN_PIN_CH2};  //some of ADC1 pins for ESP32
 #define CONVERSIONS_PER_PIN 4       // Number of ADC conversions to average
 
 // Result structure for ADC Continuous reading
-adc_continuous_data_t *adc_conversion_result = NULL;
+adc_continuous_result_t *adc_conversion_result = NULL;
 
 #endif
 
