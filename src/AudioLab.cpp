@@ -1,5 +1,5 @@
 #include "AudioLab.h"
-#include <typeinfo>
+// #include <typeinfo>
 
 ClassAudioLab AudioLab;
 
@@ -12,7 +12,7 @@ Channel::Channel() {
 }
 
 Channel& Channel::operator=(const ClassWave& right) {
-  if (typeid(*this->node) == typeid(Add) || typeid(*this->node) == typeid(Mul))
+  if (this->node->getType() == NodeType::Add || this->node->getType() == NodeType::Mul)
     delete this->node;
   this->op.set(right);
   this->node = &this->op;
@@ -20,21 +20,21 @@ Channel& Channel::operator=(const ClassWave& right) {
 }
 
 Channel& Channel::operator=(const Node& right) {
-  if (typeid(*this->node) == typeid(Add) || typeid(*this->node) == typeid(Mul))
+  if (this->node->getType() == NodeType::Add || this->node->getType() == NodeType::Mul)
     delete this->node;
   this->node = (Node *)&right;
   return *this;
 }
 
 Channel& Channel::operator=(const Composite& right) {
-  if (typeid(*this->node) == typeid(Add) || typeid(*this->node) == typeid(Mul))
+  if (this->node->getType() == NodeType::Add || this->node->getType() == NodeType::Mul)
     delete this->node;
   this->node = (Node *)&right;
   return *this;
 }
 
 void Channel::clear() {
-  if (typeid(*this->node) == typeid(Add) || typeid(*this->node) == typeid(Mul))
+  if (this->node->getType() == NodeType::Add || this->node->getType() == NodeType::Mul)
     delete this->node;
   this->op.set(zero);
   this->node = &this->op;

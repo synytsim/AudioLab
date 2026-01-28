@@ -1,4 +1,4 @@
-#include "Node.h"
+#include "Wave.h"
 
 Composite::Composite() {
     this->op1 = 0;

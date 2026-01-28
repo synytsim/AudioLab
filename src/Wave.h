@@ -4,25 +4,11 @@
 #include <Arduino.h>
 #include <math.h>
 #include "AudioLabSettings.h"
-#include "Node.h"
 
-// class Node;
-// class Add;
-// class Mul;
-// class Operand;
-// class Composite;
-
-enum WaveType
-{
-  ZERO,
-  SINE,
-  COSINE,
-  SQUARE,
-  SAWTOOTH,
-  TRIANGLE
-};
-
-const char* getWaveName(WaveType aWaveType);
+class Node;
+class Add;
+class Mul;
+class Composite;
 
 // abstract base class for wave
 class ClassWave
@@ -34,9 +20,6 @@ class ClassWave
     float phase;
     
     int _phase;
-
-    // uint8_t channel;
-    WaveType waveType;
 
   private:
   
@@ -56,8 +39,6 @@ class ClassWave
     float getFrequency() const;
     float getAmplitude() const;
     float getPhase() const;
-
-    WaveType getWaveType() const;
 
     // pure virtual function for getting the value associated with the wave
     virtual float getWaveValue() const = 0;
@@ -80,9 +61,9 @@ class ClassWave
 
 };
 
-class Zero: public ClassWave {
+class DC: public ClassWave {
   public:
-    Zero();
+    DC();
     float getWaveValue() const;
 };
 
@@ -119,6 +100,97 @@ class Triangle: public ClassWave
   public:
     Triangle();
     float getWaveValue() const;
+};
+
+
+enum class NodeType { Node, Add, Mul, Operand, Composite };
+
+class Node {
+    private:
+        friend class ClassWave;
+    protected:
+        Node *op1;
+        Node *op2;
+    public:
+        Node();
+        ~Node();
+        virtual float getValue() = 0;
+        virtual Node& copy() = 0;
+        virtual NodeType getType() const = 0;
+
+        Add& operator+(const ClassWave& right);
+        Mul& operator*(const ClassWave& right);
+        
+        Add& operator+(const Node& right);
+        Mul& operator*(const Node& right);
+
+        Add& operator+(const Composite& right);
+        Mul& operator*(const Composite& right);
+};
+
+class Add : public Node {
+    public:
+        Add(Node *opA, Node *opB);
+        float getValue() override;
+        Node& copy() override;
+        NodeType getType() const override;
+};
+
+class Mul : public Node {
+    public:
+        Mul(Node *opA, Node *opB);
+        float getValue() override;
+        Node& copy() override;
+        NodeType getType() const override;
+};
+
+class Operand : public Node {
+    private:
+        ClassWave *wave;
+    public:
+        Operand();
+        Operand(ClassWave *aWave);
+        float getValue() override;
+        Node& copy() override;
+        NodeType getType() const override;
+        void set(const ClassWave& aWave);
+};
+
+class Composite : public Node {
+    private:
+        Composite(Node* node);
+    public:
+        Composite();
+        Composite(const Node &op1);
+        Composite(const ClassWave &op1);
+        ~Composite();
+
+        Composite& operator=(const ClassWave& right);
+        Composite& operator=(const Node& right);
+        Composite& operator=(const Composite& right);
+
+        Add& operator+(const Node& right);
+        Mul& operator*(const Node& right);
+
+        Add& operator+(const ClassWave& right);
+        Mul& operator*(const ClassWave& right);
+
+        Add& operator+(const Composite& right);
+        Mul& operator*(const Composite& right);
+
+        Composite& operator+=(const Node& right);
+        Composite& operator*=(const Node& right);
+        
+        Composite& operator*=(const ClassWave& right);
+        Composite& operator+=(const ClassWave& right);
+
+        Composite& operator+=(const Composite& right);
+        Composite& operator*=(const Composite& right);
+
+        float getValue() override;
+        Node& copy() override;
+        NodeType getType() const override;
+
 };
 
 #endif

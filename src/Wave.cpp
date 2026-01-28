@@ -18,14 +18,6 @@ unsigned long GlobalTimeIndex = 0;
 const unsigned long MaxGlobalTimeIndex = AUD_OUT_SAMPLE_RATE / MAX_FLOAT_PRECISION;
 const unsigned long MaxGlobalTimeIndexWindow = MaxGlobalTimeIndex - AUD_OUT_WINDOW_SIZE;
 
-// used for debugging / printing waves
-const char* getWaveName(WaveType aWaveType) {
-  static const char* const waveNames[] = {
-    "ZERO", "SINE", "COSINE", "SQUARE", "SAWTOOTH", "TRIANGLE"
-  };
-  return waveNames[aWaveType];
-}
-
 /*
   PARENT CLASS: ClassWave
 */
@@ -77,8 +69,6 @@ float ClassWave::getFrequency(void) const { return this->frequency; }
 float ClassWave::getAmplitude(void) const { return this->amplitude; }
 float ClassWave::getPhase(void) const { return this->phase; }
 
-WaveType ClassWave::getWaveType(void) const { return this->waveType; }
-
 void ClassWave::calculateSineWave(void) {
   if (StaticSineWaveInitialzed) return;
   StaticSineWaveInitialzed = 1;
@@ -99,12 +89,12 @@ void ClassWave::synchronizeTimeIndex(void) {
 }
 
 /*
-  CHILD CLASSES: Zero, Sine, Cosine, Square, Triangle, Sawtooth
+  CHILD CLASSES: DC, Sine, Cosine, Square, Triangle, Sawtooth
 */
 
-Zero::Zero() { this->waveType = ZERO; }
+DC::DC() { this->waveType = DC; }
 
-float Zero::getWaveValue() const { return 0.0; }
+float DC::getWaveValue() const { return this->amplitude; }
 
 Sine::Sine() { this->waveType = SINE; }
 

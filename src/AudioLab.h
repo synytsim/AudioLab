@@ -2,18 +2,13 @@
 #define AUDIOLAB_H
 
 #include "AudioLabSettings.h"
-// #include "Wave.h"
+#include "Wave.h"
 // #include "Node.h"
-
-class ClassWave;
-class Node;
-class Operand;
-class Composite;
 
 class Channel {
   private:
     Node *node;
-    Operand op();
+    Operand op;
   public:
     Channel();
     Channel& operator=(const ClassWave& right);

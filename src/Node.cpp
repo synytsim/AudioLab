@@ -1,4 +1,4 @@
-#include "Node.h"
+#include "Wave.h"
 
 Node::Node() {
     this->op1 = nullptr;
@@ -82,4 +82,20 @@ float Operand::getValue() {
 
 void Operand::set(const ClassWave& aWave) {
     this->wave = (ClassWave *)&aWave;
+}
+
+NodeType Add::getType() const {
+    return NodeType::Add;
+}
+
+NodeType Mul::getType() const {
+    return NodeType::Mul;
+}
+
+NodeType Operand::getType() const {
+    return NodeType::Operand;
+}
+
+NodeType Composite::getType() const {
+    return NodeType::Composite;
 }
