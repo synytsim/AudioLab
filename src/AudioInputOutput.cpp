@@ -142,13 +142,30 @@ void ClassAudioLab::AUD_IN_OUT(void) {
   AD56X4.setChannel(DAC_PIN_SS_2, AD56X4_SETMODE_INPUT_DAC_ALL, AUD_OUT_BUFFER[4][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[5][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[6][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[7][AUD_OUT_BUFFER_IDX]);
   #endif
   #endif
-  // if input:output ratio is  4:1, each channel is written to at SAMPLE_RATE >> 1
+
+  // if input:output ratio is 2:1, each channel is written to at SAMPLE_RATE >> 1
+  // #if (AUD_IN_OUT_SAMPLE_RATIO == 1)
+  // AD56X4.setChannel(DAC_PIN_SS_1, AD56X4_SETMODE_INPUT_DAC_ALL, AUD_OUT_BUFFER[0][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[1][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[2][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[3][AUD_OUT_BUFFER_IDX]);
+  // #if (NUM_OUT_CH == 8)
+  // AD56X4.setChannel(DAC_PIN_SS_2, AD56X4_SETMODE_INPUT_DAC_ALL, AUD_OUT_BUFFER[4][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[5][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[6][AUD_OUT_BUFFER_IDX], AUD_OUT_BUFFER[7][AUD_OUT_BUFFER_IDX]);
+  // #endif
+  // #endif
+
+  // if input:output ratio is  4:1, each channel is written to at SAMPLE_RATE >> 2
   #if (AUD_IN_OUT_SAMPLE_RATIO == 2)
   AD56X4.setChannel(DAC_PIN_SS_1, AD56X4_SETMODE_INPUT_DAC, dac_channel[AUD_IN_SAMPLE_COUNT], AUD_OUT_BUFFER[AUD_IN_SAMPLE_COUNT][AUD_OUT_BUFFER_IDX]);
   #if (NUM_OUT_CH == 8)
   AD56X4.setChannel(DAC_PIN_SS_2, AD56X4_SETMODE_INPUT_DAC, dac_channel[AUD_IN_SAMPLE_COUNT], AUD_OUT_BUFFER[4 + AUD_IN_SAMPLE_COUNT][AUD_OUT_BUFFER_IDX]);
   #endif
   #endif
+
+  // if input:output ratio is  8:1, each channel is written to at SAMPLE_RATE >> 3
+  // #if (AUD_IN_OUT_SAMPLE_RATIO == 3)
+  // AD56X4.setChannel(DAC_PIN_SS_1, AD56X4_SETMODE_INPUT_DAC, dac_channel[AUD_IN_SAMPLE_COUNT], AUD_OUT_BUFFER[AUD_IN_SAMPLE_COUNT][AUD_OUT_BUFFER_IDX]);
+  // #if (NUM_OUT_CH == 8)
+  // AD56X4.setChannel(DAC_PIN_SS_2, AD56X4_SETMODE_INPUT_DAC, dac_channel[AUD_IN_SAMPLE_COUNT], AUD_OUT_BUFFER[4 + AUD_IN_SAMPLE_COUNT][AUD_OUT_BUFFER_IDX]);
+  // #endif
+  // #endif
   
   #else   // otherwise, assuming on-board DACs are used, continue if statement
   
