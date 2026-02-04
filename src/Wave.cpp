@@ -30,38 +30,44 @@ ClassWave::ClassWave(void) {
   this->_phase = 0;
 }
 
-ClassWave::~ClassWave(void) {}
+ClassWave::ClassWave(float frequency, float amplitude, float phase) {
+  this->setFrequency(frequency);
+  this->setAmplitude(amplitude);
+  this->setPhase(phase);
+};
 
-void ClassWave::set(float aFrequency, float anAmplitude, float aPhase) {
-  this->frequency = aFrequency;
-  this->amplitude = anAmplitude;
-  this->phase = aPhase;
+ClassWave::~ClassWave() {}
+
+void ClassWave::setAll(float frequency, float amplitude, float phase) {
+  this->setFrequency(frequency);
+  this->setAmplitude(amplitude);
+  this->setPhase(phase);
 }
 
-void ClassWave::reset() {
+void ClassWave::resetAll(void) {
   this->frequency = 0;
   this->amplitude = 0;
   this->phase = 0;
 }
 
-void ClassWave::setFrequency(float aFrequency) { 
-  if (!(aFrequency >= 0)) {
+void ClassWave::setFrequency(float frequency) { 
+  if (!(frequency >= 0)) {
     Serial.println("FREQUENCY MUST BE POSITIVE!");
     return;
   }
-  this->frequency = aFrequency; 
+  this->frequency = frequency; 
 }
 
-void ClassWave::setAmplitude(float anAmplitude) { 
-  this->amplitude = anAmplitude; 
+void ClassWave::setAmplitude(float amplitude) { 
+  this->amplitude = amplitude; 
 }
 
-void ClassWave::setPhase(float aPhase) {
-  if (!(aPhase >= 0)) {
+void ClassWave::setPhase(float phase) {
+  if (!(phase >= 0)) {
     Serial.println("PHASE MUST BE POSITIVE!");
     return;
   }
-  this->phase = aPhase;
+  this->phase = phase;
   this->_phase = int(round(this->phase * AUD_OUT_SAMPLE_RATE));
 }
 
@@ -92,50 +98,72 @@ void ClassWave::synchronizeTimeIndex(void) {
   CHILD CLASSES: DC, Sine, Cosine, Square, Triangle, Sawtooth
 */
 
-DC::DC() { this->waveType = DC; }
+DC::DC(void) { }
 
-float DC::getWaveValue() const { return this->amplitude; }
+DC::DC(float amplitude) { this->setAmplitude(amplitude); }
 
-Sine::Sine() { this->waveType = SINE; }
+float DC::getWaveValue(void) const { return this->amplitude; }
 
-float Sine::getWaveValue() const {;
+Sine::Sine(void) { }
+
+Sine::Sine(float frequency, float amplitude, float phase) : ClassWave(frequency, amplitude, phase) {}
+
+float Sine::getWaveValue(void) const {;
   float _timeValue = (GlobalTimeIndex * frequency + _phase) * INVERSE_SAMPLE_RATE;
   int _timeIdx = (_timeValue - floor(_timeValue)) * AUD_OUT_SAMPLE_RATE;
   return amplitude * StaticSineWave[_timeIdx];
 }
 
-Cosine::Cosine() { this->waveType = COSINE; }
+Cosine::Cosine(void) { }
 
-float Cosine::getWaveValue() const {
+Cosine::Cosine(float frequency, float amplitude, float phase) : ClassWave(frequency, amplitude, phase) {}
+
+float Cosine::getWaveValue(void) const {
   float _timeValue = (GlobalTimeIndex * frequency + _phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
   int _timeIdx = (_timeValue - floor(_timeValue)) * AUD_OUT_SAMPLE_RATE;
   return amplitude * StaticSineWave[_timeIdx];
 }
 
-Square::Square() { this->waveType = SQUARE; }
+Square::Square(void) { }
 
-float Square::getWaveValue() const {
+Square::Square(float frequency, float amplitude, float phase, float duty_cycle) : ClassWave(frequency, amplitude, phase) {
+  this->duty_cycle = duty_cycle;
+}
+
+void Square::setDutyCycle(float duty_cycle) {
+  this->duty_cycle = duty_cycle;
+}
+
+float Square::getDutyCycle(void) const {
+  return this->duty_cycle;
+}
+
+float Square::getWaveValue(void) const {
   float _timeValue = (GlobalTimeIndex * frequency + _phase) * INVERSE_SAMPLE_RATE;
   float _timeIdx = _timeValue - floor(_timeValue);
-  if (_timeIdx < 0.5) return amplitude;
-  return -amplitude;
+  if (_timeIdx < duty_cycle) return amplitude;
+  return 0.0;
 }
 
-Triangle::Triangle() { this->waveType = TRIANGLE; }
+Triangle::Triangle(void) { }
 
-float Triangle::getWaveValue() const {
+Triangle::Triangle(float frequency, float amplitude, float phase) : ClassWave(frequency, amplitude, phase) {}
+
+float Triangle::getWaveValue(void) const {
   float _timeValue = (GlobalTimeIndex * frequency + _phase + WAVE_OFFSET) * INVERSE_SAMPLE_RATE;
   float _timeIdx = _timeValue - floor(_timeValue);
-  if (_timeIdx < 0.5) return -amplitude + amplitude * 4 * _timeIdx;
-  return amplitude - amplitude * 4 * (_timeIdx - 0.5);
+  if (_timeIdx < 0.5) return 2 * amplitude * _timeIdx;
+  return 2 * amplitude - 2 * amplitude * (_timeIdx);
 }
 
-Sawtooth::Sawtooth() { this->waveType = SAWTOOTH; }
+Sawtooth::Sawtooth(void) { }
 
-float Sawtooth::getWaveValue() const {
+Sawtooth::Sawtooth(float frequency, float amplitude, float phase) : ClassWave(frequency, amplitude, phase) {}
+
+float Sawtooth::getWaveValue(void) const {
   float _timeValue = (GlobalTimeIndex * frequency + _phase + NYQUIST) * INVERSE_SAMPLE_RATE;
   float _timeIdx = _timeValue - floor(_timeValue);
-  return amplitude * 2 * _timeIdx - amplitude;
+  return amplitude * _timeIdx;
 }
 
 Add& ClassWave::operator+(const ClassWave& right) {

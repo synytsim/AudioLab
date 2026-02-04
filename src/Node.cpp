@@ -1,6 +1,6 @@
 #include "Wave.h"
 
-Node::Node() {
+Node::Node(void) {
     this->op1 = nullptr;
     this->op2 = nullptr;
 }
@@ -22,7 +22,7 @@ Mul::Mul(Node *opA, Node *opB) {
     this->op2 = opB;
 }
 
-Operand::Operand() {
+Operand::Operand(void) {
     this->wave = 0;
 }
 
@@ -56,27 +56,27 @@ Mul& Node::operator*(const Composite& right) {
     return *(new Mul(this, &right.op1->copy()));
 }
 
-Node& Add::copy() {
+Node& Add::copy(void) const {
     return *(new Add(&(this->op1->copy()), &(this->op2->copy())));
 }
 
-Node& Mul::copy() {
+Node& Mul::copy(void) const {
     return *(new Mul(&(this->op1->copy()), &(this->op2->copy())));
 }
 
-Node& Operand::copy() {
+Node& Operand::copy(void) const {
     return *(new Operand(this->wave));
 }
 
-float Mul::getValue() {
+float Mul::getValue(void) const {
     return this->op1->getValue() * this->op2->getValue();
 }
 
-float Add::getValue() {
+float Add::getValue(void) const {
     return this->op1->getValue() + this->op2->getValue();
 }
 
-float Operand::getValue() {
+float Operand::getValue(void) const {
     return this->wave->getWaveValue();
 }
 
@@ -84,18 +84,14 @@ void Operand::set(const ClassWave& aWave) {
     this->wave = (ClassWave *)&aWave;
 }
 
-NodeType Add::getType() const {
+NodeType Add::getType(void) const {
     return NodeType::Add;
 }
 
-NodeType Mul::getType() const {
+NodeType Mul::getType(void) const {
     return NodeType::Mul;
 }
 
-NodeType Operand::getType() const {
+NodeType Operand::getType(void) const {
     return NodeType::Operand;
-}
-
-NodeType Composite::getType() const {
-    return NodeType::Composite;
 }

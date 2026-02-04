@@ -1,11 +1,7 @@
 #include "Wave.h"
 
-Composite::Composite() {
+Composite::Composite(void) {
     this->op1 = 0;
-}
-
-Composite::~Composite() {
-
 }
 
 Composite::Composite(Node *op) {
@@ -83,10 +79,14 @@ Composite& Composite::operator*=(const ClassWave& right) {
     return *this; 
 }
 
-Node& Composite::copy() {
+Node& Composite::copy(void) const {
     return this->op1->copy();
 }
 
-float Composite::getValue() {
+float Composite::getValue(void) const {
     return this->op1->getValue();
+}
+
+NodeType Composite::getType(void) const {
+    return NodeType::Composite;
 }

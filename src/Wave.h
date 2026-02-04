@@ -25,30 +25,31 @@ class ClassWave
   
   public:
 
-    ClassWave();
+    ClassWave(void);
+    ClassWave(float frequency, float amplitude, float phase);
 
     ~ClassWave();  
 
-    void set(float aFrequency, float anAmplitude, float aPhase);
-    void reset();
+    void setAll(float frequency, float amplitude, float phase);
+    void resetAll(void);
 
-    void setFrequency(float aFrequency);
-    void setAmplitude(float anAmplitude);
-    void setPhase(float aPhase);
+    void setFrequency(float frequency);
+    void setAmplitude(float amplitude);
+    void setPhase(float phase);
 
-    float getFrequency() const;
-    float getAmplitude() const;
-    float getPhase() const;
+    float getFrequency(void) const;
+    float getAmplitude(void) const;
+    float getPhase(void) const;
 
     // pure virtual function for getting the value associated with the wave
-    virtual float getWaveValue() const = 0;
+    virtual float getWaveValue(void) const = 0;
 
     // calculate values for a 1Hz sine wave sampled at SAMPLE_RATE
-    static void calculateSineWave();
+    static void calculateSineWave(void);
 
-    static void iterateTimeIndex();
+    static void iterateTimeIndex(void);
 
-    static void synchronizeTimeIndex();
+    static void synchronizeTimeIndex(void);
 
     Add& operator+(const ClassWave& right);
     Mul& operator*(const ClassWave& right);
@@ -63,45 +64,63 @@ class ClassWave
 
 class DC: public ClassWave {
   public:
-    DC();
-    float getWaveValue() const;
+    DC(void);
+    DC(float amplitude);
+
+    void setAll(float frequency, float amplitude, float phase);
+
+    void setFrequency(float frequency) = delete;
+    void setPhase(float phase) = delete;
+
+    float getFrequency(void) = delete;
+    float getPhase(void) = delete;
+
+    float getWaveValue(void) const;
 };
 
 class Sine: public ClassWave
 {
   public:
-    Sine();
-    float getWaveValue() const;
+    Sine(void);
+    Sine(float frequency, float amplitude, float phase = 0);
+    float getWaveValue(void) const;
 };
 
 class Cosine: public ClassWave
 {
   public:
-    Cosine();
-    float getWaveValue() const;
+    Cosine(void);
+    Cosine(float frequency, float amplitude, float phase = 0);
+    float getWaveValue(void) const;
 };
 
 class Square: public ClassWave
 {
+    private:
+        float duty_cycle;
   public:
-    Square();
-    float getWaveValue() const;
+    Square(void);
+    Square(float frequency, float amplitude, float phase = 0, float duty_cycle = 0.5);
+    void setDutyCycle(float duty_cycle);
+    float getDutyCycle(void) const;
+    float getWaveValue(void) const;
 };
 
 class Sawtooth: public ClassWave
 {
   public:
-    Sawtooth();
-    float getWaveValue() const;
+    Sawtooth(void);
+    Sawtooth(float frequency, float amplitude, float phase = 0);
+    float getWaveValue(void) const;
 };
 
 class Triangle: public ClassWave
 {
   public:
-    Triangle();
-    float getWaveValue() const;
+    Triangle(void);
+    Triangle(float frequency, float amplitude, float phase = 0);
+    float getWaveValue(void) const;
 };
-
 
 enum class NodeType { Node, Add, Mul, Operand, Composite };
 
@@ -112,11 +131,11 @@ class Node {
         Node *op1;
         Node *op2;
     public:
-        Node();
+        Node(void);
         ~Node();
-        virtual float getValue() = 0;
-        virtual Node& copy() = 0;
-        virtual NodeType getType() const = 0;
+        virtual float getValue(void) const = 0;
+        virtual Node& copy(void) const = 0;
+        virtual NodeType getType(void) const = 0;
 
         Add& operator+(const ClassWave& right);
         Mul& operator*(const ClassWave& right);
@@ -131,28 +150,28 @@ class Node {
 class Add : public Node {
     public:
         Add(Node *opA, Node *opB);
-        float getValue() override;
-        Node& copy() override;
-        NodeType getType() const override;
+        float getValue(void) const override;
+        Node& copy(void) const override;
+        NodeType getType(void) const override;
 };
 
 class Mul : public Node {
     public:
         Mul(Node *opA, Node *opB);
-        float getValue() override;
-        Node& copy() override;
-        NodeType getType() const override;
+        float getValue(void) const override;
+        Node& copy(void) const override;
+        NodeType getType(void) const override;
 };
 
 class Operand : public Node {
     private:
         ClassWave *wave;
     public:
-        Operand();
+        Operand(void);
         Operand(ClassWave *aWave);
-        float getValue() override;
-        Node& copy() override;
-        NodeType getType() const override;
+        float getValue(void) const override;
+        Node& copy(void) const override;
+        NodeType getType(void) const override;
         void set(const ClassWave& aWave);
 };
 
@@ -160,10 +179,9 @@ class Composite : public Node {
     private:
         Composite(Node* node);
     public:
-        Composite();
+        Composite(void);
         Composite(const Node &op1);
         Composite(const ClassWave &op1);
-        ~Composite();
 
         Composite& operator=(const ClassWave& right);
         Composite& operator=(const Node& right);
@@ -187,10 +205,9 @@ class Composite : public Node {
         Composite& operator+=(const Composite& right);
         Composite& operator*=(const Composite& right);
 
-        float getValue() override;
-        Node& copy() override;
-        NodeType getType() const override;
-
+        float getValue(void) const override;
+        Node& copy(void) const override;
+        NodeType getType(void) const override;
 };
 
 #endif

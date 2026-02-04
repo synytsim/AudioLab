@@ -1,7 +1,8 @@
 #include "AudioLab.h"
 
 /******************************** THE FOLLOWING SETTINGS ARE FOR ESP32 DMA ADC ********************************/
-#ifdef ESP32
+
+#define CONVERSIONS_PER_PIN 4       // Number of ADC conversions to average
 
 #if (NUM_IN_CH == 1)
 uint8_t adc_pins[] = {IN_PIN_CH1};  //some of ADC1 pins for ESP32
@@ -13,7 +14,7 @@ uint8_t adc_pins[] = {IN_PIN_CH1};  //some of ADC1 pins for ESP32
     #define ADC_SAMPLE_RATE 160515 // ~32kHz at 4 conversions per pin and 2 4-channel SPI DACs
     #else
     #warning ADC_SAMPLE_RATE MAY BE INACCURATE
-    #define ADC_SAMPLE_RATE SAMPLE_RATE * NUM_IN_CH * (CONVERSION_PER_PIN + 1)
+    #define ADC_SAMPLE_RATE SAMPLE_RATE * NUM_IN_CH * (CONVERSIONS_PER_PIN + 1)
     //#define ADC_SAMPLE_RATE 20000     // the declaration above will get close to the necassary sample rate but will need
     #endif                              // adjustment for correct results, uncomment and adjust ADC_SAMPLE_RATE as needed
 #else                                   // use Timing.ino to see current sample rate through Serial
@@ -27,16 +28,12 @@ uint8_t adc_pins[] = {IN_PIN_CH1, IN_PIN_CH2};  //some of ADC1 pins for ESP32
     #else
     #warning ADC_SAMPLE_RATE MAY BE INACCURATE
     #define ADC_SAMPLE_RATE SAMPLE_RATE * NUM_IN_CH * (CONVERSION_PER_PIN + 1)
-    //#define ADC_SAMPLE_RATE 20000
+    // #define ADC_SAMPLE_RATE 20000
     #endif
 #endif
 
-#define CONVERSIONS_PER_PIN 4       // Number of ADC conversions to average
-
 // Result structure for ADC Continuous reading
-adc_continuous_result_t *adc_conversion_result = NULL;
-
-#endif
+adc_continuous_data_t *adc_conversion_result = NULL;
 
 #ifdef USING_AD56X4_DAC
 #include <AD56X4.h>
@@ -54,6 +51,7 @@ volatile uint16_t AUD_IN_BUFFER_IDX = 0;
 volatile uint8_t AUD_IN_SAMPLE_COUNT = 0;
 volatile uint16_t AUD_OUT_BUFFER_IDX = 0;
 volatile uint16_t AUD_OUT_BUFFER_POS = 0;
+
 
 /*
  * Ensures pin are configured
@@ -128,7 +126,7 @@ void ClassAudioLab::resetAudInOut(void) {
 }
 
 void ClassAudioLab::AUD_IN_OUT(void) {
-  if (AUD_IN_BUFFER_FULL()) return; // do nothing if input buffer is full (shouldn't really happen)
+  if (AUD_IN_BUFFER_IDX >= WINDOW_SIZE) return; // do nothing if input buffer is full (shouldn't really happen)
 
   // this condition ensures that AUD_OUT_BUFFER_IDX is properly updated regardless of input:output sample rate ratio
   if (AUD_IN_SAMPLE_COUNT == 0) { // start if

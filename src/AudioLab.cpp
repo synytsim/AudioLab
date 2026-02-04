@@ -1,9 +1,8 @@
 #include "AudioLab.h"
-// #include <typeinfo>
 
 ClassAudioLab AudioLab;
 
-Zero zero = Zero();
+DC zero = DC(0);
 
 Channel::Channel() {
   this->op = Operand();
@@ -33,14 +32,14 @@ Channel& Channel::operator=(const Composite& right) {
   return *this;
 }
 
-void Channel::clear() {
+void Channel::clear(void) {
   if (this->node->getType() == NodeType::Add || this->node->getType() == NodeType::Mul)
     delete this->node;
   this->op.set(zero);
   this->node = &this->op;
 }
 
-float Channel::getValue() {
+float Channel::getValue(void) const {
   return this->node->getValue();
 }
 

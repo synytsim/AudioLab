@@ -3,7 +3,6 @@
 
 #include "AudioLabSettings.h"
 #include "Wave.h"
-// #include "Node.h"
 
 class Channel {
   private:
@@ -15,9 +14,9 @@ class Channel {
     Channel& operator=(const Node& right);
     Channel& operator=(const Composite& right);
 
-    void clear();
+    void clear(void);
 
-    float getValue();
+    float getValue(void) const;
 };
 
 class ClassAudioLab
@@ -59,15 +58,16 @@ class ClassAudioLab
   
     // function that gets called when timer is triggered
     static void ARDUINO_ISR_ATTR AUD_IN_OUT(void);
+    
     // returns true when input buffer is full
-    static bool ARDUINO_ISR_ATTR AUD_IN_BUFFER_FULL(void);
+    static bool AUD_IN_BUFFER_FULL(void);
 
     // restores input buffer index and synchronizes audio output buffer
     void SYNC_AUD_IN_OUT_IDX(void);
 
   public:
     
-    Channel channel[NUM_OUT_CH] = { Channel() };
+    Channel channel[NUM_OUT_CH];
 
     /**
      * Initalize AudioLab, configure pins and timer
@@ -108,15 +108,6 @@ class ClassAudioLab
 
       return true;
     };
-
-    /**
-     * Linearly maps amplitudes of all waves on a channel so their sum will be
-     * less than or equal to 1.0.
-     * @param aChannel channel of the waves to be mapped
-     * @param aMin the minumum value to use for mapping, if amplitude sum surpasses this value then the amplitude sum will be used.
-     * @param smoothing amplitude smoothing (blending current sum with previous sum), must be in the [0, 1.0] range
-     */
-    // void mapAmplitudes(uint8_t aChannel, float aMin, float smoothing = 0.0);
 
     /**
      * Fills output buffer with synthesized signal composed of assigned waves

@@ -20,25 +20,18 @@
 #ifndef AUDIOLAB_SETTINGS_H
 #define AUDIOLAB_SETTINGS_H
 
-#define DEBUG
-
-#ifndef SAMPLE_RATE
 #define SAMPLE_RATE 8192    // Supported sample rates are 8, 16 and 32 kHz. If other sample rates are needed
-#endif                      // see AudioInputOutput.cpp
 
-#ifndef WINDOW_SIZE
 #define WINDOW_SIZE 128
-#endif
 
 /******************************** FEATHER ADC PINS ********************************/
 #define NUM_IN_CH 1         // Number of input channels to sample (Limit is 2, but adding more is fairly straightforward)
                             // See AudioInputOutput.cpp
-
 #define IN_PIN_CH1 A2       
 #define IN_PIN_CH2 A3       
 
 /******************************** AD56X4 DAC SETTINGS ********************************/
-// #define USING_AD56X4_DAC    // Uncomment if using AD5644 SPI DAC
+#define USING_AD56X4_DAC    // Uncomment if using AD5644 SPI DAC
 
 #if defined(USING_AD56X4_DAC)
 #define DAC_RESOLUTION 16   // The AD56X4 comes in 3 versions: 12, 14 and 16 bit
@@ -46,9 +39,6 @@
 // #define NUM_OUT_CH 4     // Uncomment if using 1xAD56X4 SPI DAC and comment below
 #define NUM_OUT_CH 8        // Uncomment if using 2xAD56X4 SPI DAC and comment above
 
-// Designated slave select pins for AD56X4. Using different pins may need to tweak
-// WRITE_PERI_REG(...) in AD56X4.cpp (seperate library)
-// For flexibility it may be best to define SS toggling via function pointer(s)
 #define DAC_PIN_SS_1 33     // Slave select pin for first AD56X4 
 #define DAC_PIN_SS_2 32     // Slave select pin for second AD56X4 
 
@@ -64,7 +54,7 @@
                                         // in AudioInputOutput.cpp
 
 
-/******************************** FEATHER ESP32 AND SAMD51 DAC RESOLUTION ********************************/
+/******************************** FEATHER ESP32 RESOLUTION ********************************/
 #else
 #define NUM_OUT_CH 2
 #define OUT_PIN_CH1 A0
@@ -89,15 +79,5 @@
 
 const int AUD_OUT_SAMPLE_RATE = int(SAMPLE_RATE) >> AUD_IN_OUT_SAMPLE_RATIO;
 const int AUD_OUT_WINDOW_SIZE = int(WINDOW_SIZE) >> AUD_IN_OUT_SAMPLE_RATIO;
-
-#if defined(DEBUG)
-#define DBG_print(...) Serial.print(__VA_ARGS__)
-#define DBG_println(...) Serial.println(__VA_ARGS__)
-#define DBG_printf(...) Serial.printf(__VA_ARGS__)
-#else
-#define DBG_print(...) NULL
-#define DBG_println(...) NULL
-#define DBG_printf(...) NULL
-#endif
 
 #endif

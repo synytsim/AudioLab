@@ -65,6 +65,18 @@ void ClassAudioLab::synthesize() {
     // increment time index
     ClassWave::iterateTimeIndex();
   }
+
+  for (i = 0; i < AUD_OUT_WINDOW_SIZE; i++) {
+    // sum together the sine waves for all channels
+    for (c = 0; c < NUM_OUT_CH; c++) {
+      // add windowed value to the existing values in scratch pad audio output buffer at this moment in time
+      generateAudioBuffer[c][generateAudioBufferIdx] += this->channel[c].getValue() * windowingCosWave[i + AUD_OUT_WINDOW_SIZE];
+    }
+    generateAudioBufferIdx += 1;
+    if (generateAudioBufferIdx == GEN_AUD_BUFFER_SIZE) generateAudioBufferIdx = 0;
+    // increment time index
+    ClassWave::iterateTimeIndex();
+  }
   
   // reset the next window to synthesize new signal
   _generateAudioBufferIdxCpy = generateAudioBufferIdx;
