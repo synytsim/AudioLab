@@ -41,6 +41,24 @@ adc_continuous_result_t *adc_conversion_result = NULL;
 #ifdef USING_AD56X4_DAC
 #include <AD56X4.h>
 byte dac_channel[] = { AD56X4_CHANNEL_A, AD56X4_CHANNEL_B, AD56X4_CHANNEL_C, AD56X4_CHANNEL_D };
+
+void ClassAudioLab::resetAD56X4(void) {
+  SPI.begin();
+  SPI.beginTransaction(SPISettings(50000000, MSBFIRST, SPI_MODE1));
+
+  pinMode(DAC_PIN_SS_1, OUTPUT);
+  AD56X4.reset(DAC_PIN_SS_1, true);
+  AD56X4.useInternalReference(DAC_PIN_SS_1, true);
+  AD56X4.setChannel(DAC_PIN_SS_1, AD56X4_SETMODE_INPUT_DAC_ALL, DAC_MID, DAC_MID, DAC_MID, DAC_MID);
+
+  #if (NUM_OUT_CH == 8)
+  pinMode(DAC_PIN_SS_2, OUTPUT);
+  AD56X4.reset(DAC_PIN_SS_2, true);
+  AD56X4.useInternalReference(DAC_PIN_SS_2, true);
+  AD56X4.setChannel(DAC_PIN_SS_2, AD56X4_SETMODE_INPUT_DAC_ALL, DAC_MID, DAC_MID, DAC_MID, DAC_MID);
+  #endif
+}
+
 #else
 #include <driver/dac.h>
 #endif
