@@ -205,15 +205,6 @@ class ClassAudioLab
      */
     void changeWaveType(Wave& aWave, WaveType aWaveType);
 
-    // /**
-    //  * Get pointer to input buffer
-    //  *
-    //  * @param aChannel input buffer channel between [0..NUM_IN_CH), default is 0
-    //  *
-    //  * @return read-only pointer to input buffer or NULL if NUM_IN_CH == 0
-    //  */
-    // uint16_t *getInputBuffer(uint8_t aChannel = 0);
-
     /**
      * Prints the waves that will be synthesized to Serial in format (WaveType, Frequency, Amplitude, Phase)
      *
