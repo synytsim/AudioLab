@@ -119,9 +119,16 @@ void ClassAudioLab::configurePins(void) {
 
 void ClassAudioLab::pauseSampling(void) {
   if (!analogContinuousStop()) Serial.println("Error: analogContinousStop()"); 
+  #ifdef USING_AD56X4_DAC
+  SPI.endTransaction();
+  SPI.end();
+  #endif
 }
 
 void ClassAudioLab::resumeSampling(void) {
+  #ifdef USING_AD56X4_DAC
+  resetAD56X4();
+  #endif
   if (!analogContinuousStart()) Serial.println("Error: analogContinousStart()");
 }
 
