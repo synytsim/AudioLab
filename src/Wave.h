@@ -127,6 +127,11 @@ enum class NodeType { Node, Add, Mul, Operand, Composite };
 class Node {
     private:
         friend class ClassWave;
+
+        // static Operand operands[MAX_NUM_NODES];
+        // static Add adds[MAX_NUM_NODES];
+        // static Mul muls[MAX_NUM_NODES];
+
     protected:
         Node *op1;
         Node *op2;

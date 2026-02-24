@@ -31,7 +31,7 @@
 #define IN_PIN_CH2 A3       
 
 /******************************** AD56X4 DAC SETTINGS ********************************/
-// #define USING_AD56X4_DAC    // Uncomment if using AD5644 SPI DAC
+#define USING_AD56X4_DAC    // Uncomment if using AD5644 SPI DAC
 
 #if defined(USING_AD56X4_DAC)
 #define DAC_RESOLUTION 16   // The AD56X4 comes in 3 versions: 12, 14 and 16 bit
@@ -42,7 +42,7 @@
 #define DAC_PIN_SS_1 33     // Slave select pin for first AD56X4 
 #define DAC_PIN_SS_2 32     // Slave select pin for second AD56X4 
 
-#define AUD_IN_OUT_SAMPLE_RATIO 2       // Uncomment to write to each AD56X4 channel at 
+#define AUD_IN_OUT_SAMPLE_RATIO 0       // Uncomment to write to each AD56X4 channel at 
                                         // (SAMPLE_RATE >> AUD_IN_OUT_SAMPLE_RATIO) Hz
                                         // Note: in powers of 2
 
@@ -74,8 +74,10 @@
 
 /******************************** AUDIO INPUT OUTPUT SAMPLED RATIO ********************************/
 #ifndef AUD_IN_OUT_SAMPLE_RATIO
-#define AUD_IN_OUT_SAMPLE_RATIO 0 // Modify to achieve required output sample rate (in powers of 2 (0 = 1:1, 1 = 2:1, 2 = 4:1))
+#define AUD_IN_OUT_SAMPLE_RATIO 0   // Modify to achieve required output sample rate (in powers of 2 (0 = 1:1, 1 = 2:1, 2 = 4:1))
 #endif
+
+#define MAX_NUM_NODES 64            // Maximum number of nodes to statically allocate for ASTs' (Add, Mul, Operand objects)
 
 const int AUD_OUT_SAMPLE_RATE = int(SAMPLE_RATE) >> AUD_IN_OUT_SAMPLE_RATIO;
 const int AUD_OUT_WINDOW_SIZE = int(WINDOW_SIZE) >> AUD_IN_OUT_SAMPLE_RATIO;

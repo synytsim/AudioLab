@@ -28,6 +28,10 @@ class ClassAudioLab
     // configure input and output pins
     void configurePins();
 
+    #if defined(USING_AD56X4_DAC)
+    void resetAD56X4(void);
+    #endif
+
     // calculates values for windowing wave
     void calculateWindowingWave();
 
