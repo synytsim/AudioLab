@@ -78,24 +78,10 @@ volatile uint16_t AUD_OUT_BUFFER_POS = 0;
  */
 void ClassAudioLab::configurePins(void) {
   #ifdef USING_AD56X4_DAC
-
   // setting up AD5644 SPI DAC
-  SPI.begin();
-
-  SPI.beginTransaction(SPISettings(50000000, MSBFIRST, SPI_MODE1));
-  
-  pinMode(DAC_PIN_SS_1, OUTPUT);
-  AD56X4.reset(DAC_PIN_SS_1, true);
-  AD56X4.useInternalReference(DAC_PIN_SS_1, true);
-  AD56X4.setChannel(DAC_PIN_SS_1, AD56X4_SETMODE_INPUT_DAC_ALL, DAC_MID, DAC_MID, DAC_MID, DAC_MID);
-
-  #if (NUM_OUT_CH == 8)
-  pinMode(DAC_PIN_SS_2, OUTPUT);
-  AD56X4.reset(DAC_PIN_SS_2, true);
-  AD56X4.useInternalReference(DAC_PIN_SS_2, true);
-  AD56X4.setChannel(DAC_PIN_SS_2, AD56X4_SETMODE_INPUT_DAC_ALL, DAC_MID, DAC_MID, DAC_MID, DAC_MID);
-  #endif
-
+  resetAD56X4();
+  SPI.endTransaction();
+  SPI.end();
   #else
 
   // otherwise assuming using on-board DAC(s)
