@@ -9,8 +9,7 @@ typedef ClassWave* Wave;
 
 class ClassAudioLab
 {
-  private:    
-
+  private:
     #ifdef USING_AD56X4_DAC
     void resetAD56X4(void);
     #endif
